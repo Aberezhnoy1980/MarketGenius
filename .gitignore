@@ -1,0 +1,6 @@
+*.DS_Store
+*.vscode
+*.venv
+**/__pycache__
+MOEX/client/raw.py
+MOEX/client/stock_listing.txt
