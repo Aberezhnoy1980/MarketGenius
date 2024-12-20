@@ -1,6 +1,7 @@
+**.idea
 *.DS_Store
 *.vscode
-*.venv
+**/.venv
 **/__pycache__
-MOEX/client/raw.py
-MOEX/client/stock_listing.txt
+**/raw.py
+**/stock_listing.txt
