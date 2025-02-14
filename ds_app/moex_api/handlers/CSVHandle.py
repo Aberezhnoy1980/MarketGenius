@@ -12,6 +12,7 @@ class CSVHandler(MicexISSDataHandler):
     def process_the_data(self, moex_data: Any):
         """ Write chunks of data into file.
         """
+        self.container.write_data(moex_data)
 
 
 class SQLHandler(MicexISSDataHandler):

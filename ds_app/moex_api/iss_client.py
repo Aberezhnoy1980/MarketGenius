@@ -232,11 +232,11 @@ class MicexISSClient:
 
     def get_history_csv(self, list_level: Union[int, None] = None,
                         sec_ids: Union[Set[str], None] = None,
-                        filepath: Union[str, None] = None) -> bool:
+                        filepath: Union[str, None] = None):
         """Get historical data and convert it in csv or parquet format"""
         handler = self.handlers['csv']
         # handler.container.__setattr__('filepath', filepath)
-        # handler.container.set_pathfile(filepath=filepath)
+        handler.container.set_pathfile(filepath=filepath)
 
         emb = {'engines': 'stock', 'markets': 'shares'}
         params = {'iss.only': 'history'}
