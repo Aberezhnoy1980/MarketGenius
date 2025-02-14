@@ -1,8 +1,0 @@
-requests
-# urllib.request
-# http.cookiejar
-pandas
-apimoex
-moexalgo
-# psycopg2
-psycopg2-binary

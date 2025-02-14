@@ -5,3 +5,4 @@
 **/__pycache__
 **/raw.py
 **/stock_listing.txt
+.ds_env
