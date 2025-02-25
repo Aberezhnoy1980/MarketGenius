@@ -13,7 +13,11 @@ MarketGenius — это платформа для быстрого анализ�
 
 ### Архитектура проекта
 
-![Архитектура](docs/Architecture.png)
+![Архитектура](docs/img/Architecture.png)
+
+### Структура проекта
+
+![Структура проекта](docs/img/project_structure.png)
 
 <!-- <img src="https://drive.google.com/uc?export=view&id=12a2ubqU5IWFY8hQZbu1keve7O" alt="Изображение">
 

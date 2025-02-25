@@ -1,8 +1,24 @@
 import os
 from datetime import datetime
 
-from moex_api.iss_client import MicexISSDataHandler
 from typing import Any, Set, Dict, Tuple, Union, Type, Collection
+
+
+class MicexISSDataHandler:
+    """ Data handler which will be called
+    by the ISS client to handle downloaded data.
+    """
+
+    def __init__(self, container: Type):
+        """ The handler will have a container to store received data.
+        """
+        self.container = container()
+
+    def process_the_data(self, market_data: Any):
+        """ This handler method should be overridden to perform
+        the processing of data returned by the server.
+        """
+        pass
 
 
 class CSVHandler(MicexISSDataHandler):
@@ -12,7 +28,9 @@ class CSVHandler(MicexISSDataHandler):
     def process_the_data(self, moex_data: Any):
         """ Write chunks of data into file.
         """
-        self.container.write_data(moex_data)
+        with open(self.container.filepath, 'a') as file:
+            for line in moex_data:
+                file.write(line + '\n')
 
 
 class SQLHandler(MicexISSDataHandler):
@@ -32,11 +50,12 @@ class CSVContainer:
     def __init__(self):
         self.filepath = None
 
-    def write_file(self, content: Collection):
+    def set_filepath(self, filepath: str):
+        self.filepath = filepath
         if self.filepath is None:
             current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-            filepath = f"unknown_{current_time}.csv"
-            self.set_pathfile(filepath=filepath)
+            filepath = f"{current_time}.csv"
+            self.set_filepath(filepath=filepath)
         else:
             if os.path.exists(self.filepath):
                 base_name, ext = os.path.splitext(self.filepath)
@@ -47,12 +66,6 @@ class CSVContainer:
                         self.filepath = new_file_name
                         break
                     count += 1
-            with open(self.filepath, 'a') as file:
-                for line in content:
-                    file.write(line + '\n')
-
-    def set_pathfile(self, filepath: str) -> None:
-        self.filepath = filepath
 
 
 class SQLContainer:

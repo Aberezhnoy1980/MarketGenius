@@ -167,7 +167,7 @@ https://iss.moex.com/iss/history/engines/stock/markets/shares/securities/SBER.cs
 Отсутствие параметра `iss.only=history` добавит в выдачу информацию о курсоре:
 
 ```json
-"history.cursor": {
+"stocks.cursor": {
 	"metadata": {
 		"INDEX": {"type": "int64"},
 		"TOTAL": {"type": "int64"},
@@ -224,6 +224,8 @@ source .ds_env/bin/acivate
 
 ```shell
 pip3 -V
+which python
+which pip
 ``` 
 
 * Деактивация:

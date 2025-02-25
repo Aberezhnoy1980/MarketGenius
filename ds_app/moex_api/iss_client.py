@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-"""
-    Custom micro library implementing interaction with Moscow Exchange ISS server
-    based on MOEX docs example.
+"""Custom micro library implementing interaction with Moscow Exchange ISS server based on MOEX docs example.
 
     Version: 1.0
     Developed for Python 3.x
@@ -9,14 +7,17 @@
     @copyright: 2025 by Aleksandr Berezhnoy
 """
 import os
-from typing import Any, Set, Dict, Tuple, Union, Type
+from typing import Any, Set, Dict, Tuple, Union, Type, List
 import requests
+from requests import Response
 from requests.auth import HTTPBasicAuth
 from datetime import datetime
+import time
+
 import logging
 import pandas
-from ds_app.exception.ds_exc import InvalidListLevelError
-from moex_api.handlers.CSVHandle import *
+from ds_app.exception.ds_exc import InvalidArgs
+from moex_api.handlers.handle import *
 from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
@@ -36,26 +37,16 @@ logger.addHandler(file_handler)
 
 
 class UrlBuilder:
-    """
-        Create url string
-    """
-
     def __init__(self):
         self._SYSTEM_PREFIX = 'https://iss.moex.com/'
         self._NAMESPACE = {'trading_system': 'iss', 'trading_results': 'iss/history'}
         self.DEFAULT_EMB = {'engines': 'stock', 'markets': 'shares'}
-        self.templates = {
-            'history_by_date': 'http://iss.moex.com/iss/history/engines/{engine}/markets/{market}/boards/{board}/securities.{format}?date={date}',
-            'history_by_sec': 'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities/{secID}.{format}?iss.only=history',
-            'tickers': 'https://iss.moex.com/iss/engines/stock/markets/shares/securities.{format}',
-            'MOEX_secs': 'https://iss.moex.com/iss/securities.xml?group_by=group&group_by_filter=stock_shares',
-        }
 
     def build_url(self, response_format: str = 'json',
-                  namespace: str = 'trading_system',
-                  emb: Dict[str, str] = None,
-                  sec_id: str = None,
-                  params: Dict[str, str] = None):
+                  namespace: str = 'trading_results',
+                  emb: Union[Dict[str, str] | None] = None,
+                  sec_id: Union[str, None] = None,
+                  params: Union[Dict[str, str], None] = None):
         """A method for constructing a URL for a request to the ISS server
 
         Args:
@@ -92,7 +83,7 @@ class Config:
         """ Container for all the configuration options:
 
         Args:
-            user: username in MOEX Passport to access real-time data and history
+            user: username in MOEX Passport to access real-time data and stocks
             password: password for this user
             proxy_url: proxy URL if any is used, specified as http://proxy:port
             debug_level: 0 - no output, 1 - send debug info to stdout
@@ -149,36 +140,52 @@ class MicexAuth:
         return True
 
     def ensure_auth(self) -> bool:
-        """Repeat auth request if failed last time or cookie expired."""
-        if not self.passport or self._is_cookie_expired():
+        """Repeats auth request if failed last time or cookie expired."""
+        is_cookie_expired = self._is_cookie_expired()
+        if not self.passport or is_cookie_expired:
             self.auth()
-        if self.passport and not self._is_cookie_expired():
+        if self.passport and not is_cookie_expired:
             return True
         return False
 
 
-class MicexISSDataHandler:
-    """ Data handler which will be called
-    by the ISS client to handle downloaded data.
+def timer(func):
+    """
+    Decorator
+    Returns:
+
     """
 
-    def __init__(self, container: Type):
-        """ The handler will have a container to store received data.
-        """
-        self.container = container()
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
 
-    def process_the_data(self, market_data: Any):
-        """ This handler method should be overridden to perform
-        the processing of data returned by the server.
-        """
-        pass
+        hours, rem = divmod(execution_time, 3600)
+        minutes, seconds = divmod(rem, 60)
+        milliseconds = (execution_time - int(execution_time)) * 1000
+
+        time_str = "{:02}:{:02}:{:02}:{:03}".format(int(hours), int(minutes), int(seconds), int(milliseconds))
+
+        logger.info(f"Время выполнения {func.__name__}: {time_str}")
+        return result
+
+    return wrapper
+
+
+def _del_null(num: Union[int, float, None]) -> Union[int, float]:
+    """ Replaces null string with zero
+    """
+    return 0 if num is None else num
 
 
 class MicexISSClient:
     """ Methods for interacting with the MICEX ISS server.
     """
 
-    def __init__(self, auth: MicexAuth, handler: Type[MicexISSDataHandler], container: Type):
+    def __init__(self, auth: MicexAuth | None = None, handler: Type[MicexISSDataHandler] | None = None,
+                 container: Type | None = None):
         """
         Args:
             auth: instance of the MicexAuth class with authentication info
@@ -189,23 +196,25 @@ class MicexISSClient:
         self.handlers = {'csv': CSVHandler(CSVContainer),
                          'sql': SQLHandler(SQLContainer),
                          'df': DFHandler(DFContainer)}
-        self.custom_handler = handler(container)
-        self.handlers[self.custom_handler.__class__.__name__] = self.custom_handler
+        if handler and container:
+            self.custom_handler = handler(container)
+            self.handlers[self.custom_handler.__class__.__name__] = self.custom_handler
+        else:
+            logger.info('The client will use the built-in handlers')
         self.url_builder = UrlBuilder()
 
-    def get_share_listing(self) -> Set[Tuple[str, str, str, str, int]]:
+    def get_stock_exchange_list(self) -> Set[Tuple[str, str, str, str, int]]:
         """Get list of shares and listing level
 
         Returns:
             set: Tuples of the unique names of the securities with listing level
         """
         url = self.url_builder.build_url(
-            response_format='json',
             namespace='trading_system',
             emb=self.url_builder.DEFAULT_EMB
         )
 
-        jres = requests.get(url).json()
+        jres = self._get_get(url).json()
 
         jsec = jres['securities']
         jdata = jsec['data']
@@ -230,74 +239,103 @@ class MicexISSClient:
                 )
         return share_listing
 
-    def get_history_csv(self, list_level: Union[int, None] = None,
-                        sec_ids: Union[Set[str], None] = None,
-                        filepath: Union[str, None] = None):
+    @timer
+    def get_history_csv(self, emb: Dict[str, str] = None,
+                        primary_board: bool = False,
+                        list_level: int = None,
+                        sec_ids: Set[str] = None,
+                        date_interval: str = None,
+                        filepath: str = None):
         """Get historical data and convert it in csv or parquet format"""
+        # Define a handler
         handler = self.handlers['csv']
-        # handler.container.__setattr__('filepath', filepath)
-        handler.container.set_pathfile(filepath=filepath)
+        # Set the file path
+        handler.container.set_filepath(filepath=filepath)
 
-        emb = {'engines': 'stock', 'markets': 'shares'}
-        params = {'iss.only': 'history'}
+        # Define params
+        params = {'iss.only': 'history',
+                  'history.columns': 'BOARDID,TRADEDATE,SECID,NUMTRADES,VALUE,OPEN,LOW,HIGH,LEGALCLOSEPRICE,WAPRICE,'
+                                     'CLOSE,VOLUME,MARKETPRICE2,MARKETPRICE3,ADMITTEDQUOTE,MP2VALTRD,'
+                                     'MARKETPRICE3TRADESVALUE,ADMITTEDVALUE,WAVAL,TRADINGSESSION,CURRENCYID,TRENDCLSPR'}
+        if date_interval:
+            params['from'] = date_interval.split()[0]
+            params['till'] = date_interval.split()[1]
+        if primary_board:
+            params['marketprice_board'] = 1
 
-        if list_level and list_level not in range(1, 4):
-            raise InvalidListLevelError('No shares found for the provided list level.')
-        else:
-            share_list = [
-                el for el in self.get_share_listing() if el[4] == list_level
-            ]
-        if sec_ids:
-            share_list = [
-                el for el in self.get_share_listing() if el[0] in sec_ids
-            ]
-        else:
-            share_list = self.get_share_listing()
+        # Define a list of securities
+        stocks = self._get_list_of_stocks(list_level, sec_ids)
+        logger.info(f'Data will be received for the following stocks: {stocks}')
+        # Write columns
+        columns = list()
+        columns.append(params['history.columns'].replace(',', ';'))
+        handler.process_the_data(columns)
 
-        result = {}
-
-        for sec in tqdm(share_list):
-            # Get ticker
+        # Getting the data
+        for stock in tqdm(stocks):
             url = self.url_builder.build_url(
-                response_format='json',
-                namespace='trading_results',
-                emb=emb,
+                response_format='csv',
+                emb=emb if emb else self.url_builder.DEFAULT_EMB,
                 params=params,
-                sec_id=sec[0],
+                sec_id=stock
             )
-            logger.debug(f'load data for {sec[0]}')
+            logger.info(f'Url has been built: {url}')
+
+            # Get history cursor
+            _INDEX, _PAGESIZE, _TOTAL = self._get_history_cursor(stock, url)
             start = 0
-            cnt = 1
-            # Get column names
-            columns = requests.get(url + '&start=' + str(start)).text.split()[1:][0] + '\n'
-            # Send column names
-            handler.process_the_data(columns)
-            # Send data
-
-            while cnt > 0:
-                data = requests.get(url + '&start=' + str(start)).text.split()[1:][1:]
+            # cnt = 1
+            for _ in tqdm(range(_INDEX, _TOTAL, _PAGESIZE)):
+                data = self._get_get(url + '&start=' + str(start)).text.split()[2:]
                 handler.process_the_data(data)
-                cnt = len(data)
-                start = start + cnt
+                start += len(data)
+            logger.info(f'Data loading for {stock} is completed')
 
+    def transfer_data_to_SQL(self):
+        pass
 
-    @staticmethod
-    def _del_null(num: Union[int, float, None]) -> Union[int, float]:
-        """ replace null string with zero
+    def _get_get(self, url: str) -> Response:
         """
-        return 0 if num is None else num
 
+        Args:
+            url:
 
-class CSVHandler(MicexISSDataHandler):
-    pass
+        Returns:
 
+        """
+        return self.auth.session.get(url) if self.auth else requests.get(url)
 
-class DFHandler(MicexISSDataHandler):
-    pass
+    def _get_history_cursor(self, stock: str, url: str) -> Tuple[int, int, int]:
+        _INDEX = int(self._get_get(
+            url.replace('iss.only=history', 'iss.only=history.cursor&iss.meta=off')).text.split()[1].split(';')[0])
+        _TOTAL = int(self._get_get(
+            url.replace('iss.only=history', 'iss.only=history.cursor&iss.meta=off')).text.split()[1].split(';')[1])
+        _PAGESIZE = int(self._get_get(
+            url.replace('iss.only=history', 'iss.only=history.cursor&iss.meta=off')).text.split()[1].split(';')[2])
+        logger.info(f'Total {_TOTAL} rows will be received for {stock}')
+        logger.info(f'Data loading for {stock} has started')
+        return _INDEX, _PAGESIZE, _TOTAL
 
-
-class SQLHandler(MicexISSDataHandler):
-    pass
+    def _get_list_of_stocks(self, list_level: int | None = None, sec_ids: str | Set[str] | None = None) -> List[str]:
+        if list_level or sec_ids:
+            if sec_ids:
+                sec_ids = set(map(lambda el: el.upper(), sec_ids))
+                stocks = [el[0] for el in self.get_stock_exchange_list() if el[0] in sec_ids]
+                if len(stocks) == 0 and list_level:
+                    if isinstance(list_level, int) and list_level in range(1, 4):
+                        stocks = [el[0] for el in self.get_stock_exchange_list() if el[4] == list_level]
+                    else:
+                        raise InvalidArgs('Invalid both arguments: sec_ids and list_level')
+                elif len(stocks) == 0 and not list_level:
+                    raise InvalidArgs('No securities found.')
+            else:
+                if isinstance(list_level, int) and list_level in range(1, 4):
+                    stocks = [el[0] for el in self.get_stock_exchange_list() if el[4] == list_level]
+                else:
+                    raise InvalidArgs('The list level should be an integer from 1 to 3.')
+        else:
+            stocks = [el[0] for el in self.get_stock_exchange_list()]
+        return stocks
 
 
 if __name__ == '__main__':
