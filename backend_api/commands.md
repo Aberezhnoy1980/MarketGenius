@@ -64,6 +64,12 @@ pip install sqlalchemy
 pip install alembic
 ```
 
+Не забываем (так как с базой данных работаем асинхронно) установить asyncpg
+
+```SHELL
+pip install asyncpg
+```
+
 Установка форматера и его настройка
 
 ```SHELL
@@ -181,4 +187,54 @@ networks:
 
 ```docker
 docker compose --env-file .env up
+```
+
+Миграции
+Инициализация
+
+```SHELL
+alembic init src/migrations 
+```
+
+Файл env.py (миграции не асинхронные)
+
+```python
+from backend_api.src.config import settings
+from backend_api.src.database import Base
+from backend_api.src.models.users import UsersOrm
+
+config.set_main_option("sqlalchemy.url", f"{settings.DB_URL}?async_fallback=True")
+
+target_metadata = Base.metadata
+```
+
+Создание скрипта
+
+```SHEL
+alembic revision --autogenerate -m "init migration"
+```
+
+Миграция
+
+```SHELL
+alembic upgrade head
+```
+
+## Авторизация/Аутентификация
+
+Установка библиотек
+
+```SHELL
+pip install pyjwt "passlib[bcrypt]"
+```
+
+Валидация электронной почты
+
+```SHELL
+pip install email_validator
+```
+Создание случайного секретного ключа
+
+```SHELL
+openssl rand -hex 32
 ```
