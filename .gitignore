@@ -8,3 +8,6 @@
 .ds_env
 .ml_env
 **.log
+**/.backend_api_env
+**/.env
+**/mg_users-data
