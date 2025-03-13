@@ -37,6 +37,7 @@ logger.addHandler(file_handler)
 
 
 class UrlBuilder:
+
     def __init__(self):
         self._SYSTEM_PREFIX = 'https://iss.moex.com/'
         self._NAMESPACE = {'trading_system': 'iss', 'trading_results': 'iss/history'}
@@ -79,6 +80,7 @@ class UrlBuilder:
 
 
 class Config:
+
     def __init__(self, user: str = '', password: str = '', proxy_url: str = '', debug_level: int = 0):
         """ Container for all the configuration options:
 
@@ -107,7 +109,7 @@ class MicexAuth:
         self.auth()
 
     def auth(self):
-        """Make a GET request with Basic Authentication."""
+        """Makes a GET request with Basic Authentication."""
         response = self.session.get(
             self.config.auth_url,
             auth=HTTPBasicAuth(self.config.user, self.config.password)
@@ -140,7 +142,7 @@ class MicexAuth:
         return True
 
     def ensure_auth(self) -> bool:
-        """Repeats auth request if failed last time or cookie expired."""
+        """Repeats backend_api request if failed last time or cookie expired."""
         is_cookie_expired = self._is_cookie_expired()
         if not self.passport or is_cookie_expired:
             self.auth()
@@ -151,7 +153,10 @@ class MicexAuth:
 
 def timer(func):
     """
-    Decorator
+
+    Args:
+        func:
+
     Returns:
 
     """
@@ -214,30 +219,32 @@ class MicexISSClient:
             emb=self.url_builder.DEFAULT_EMB
         )
 
-        jres = self._get_get(url).json()
+        try:
+            jres = self._get_get(url).json()
+            jsec = jres['securities']
+            jdata = jsec['data']
+            jcols = jsec['columns']
+            sec_idx = jcols.index('SECID')
+            short_name_idx = jcols.index('SHORTNAME')
+            name_idx = jcols.index('SECNAME')
+            type_idx = jcols.index('SECTYPE')
+            level_idx = jcols.index('LISTLEVEL')
 
-        jsec = jres['securities']
-        jdata = jsec['data']
-        jcols = jsec['columns']
-        sec_idx = jcols.index('SECID')
-        short_name_idx = jcols.index('SHORTNAME')
-        name_idx = jcols.index('SECNAME')
-        type_idx = jcols.index('SECTYPE')
-        level_idx = jcols.index('LISTLEVEL')
-
-        share_listing = set()
-        for sec in jdata:
-            if sec[type_idx] in ('1', '2'):
-                share_listing.add(
-                    (
-                        sec[sec_idx],
-                        sec[short_name_idx],
-                        sec[name_idx],
-                        sec[type_idx],
-                        sec[level_idx],
+            share_listing = set()
+            for sec in jdata:
+                if sec[type_idx] in ('1', '2'):
+                    share_listing.add(
+                        (
+                            sec[sec_idx],
+                            sec[short_name_idx],
+                            sec[name_idx],
+                            sec[type_idx],
+                            sec[level_idx],
+                        )
                     )
-                )
-        return share_listing
+            return share_listing
+        except AttributeError as e:
+            logger.exception(e, exc_info=False)
 
     @timer
     def get_history_csv(self, emb: Dict[str, str] = None,
@@ -272,26 +279,54 @@ class MicexISSClient:
         handler.process_the_data(columns)
 
         # Getting the data
-        for stock in tqdm(stocks):
-            url = self.url_builder.build_url(
-                response_format='csv',
-                emb=emb if emb else self.url_builder.DEFAULT_EMB,
-                params=params,
-                sec_id=stock
-            )
-            logger.info(f'Url has been built: {url}')
+        try:
+            for stock in tqdm(stocks, leave=False):
+                url = self.url_builder.build_url(
+                    response_format='csv',
+                    emb=emb if emb else self.url_builder.DEFAULT_EMB,
+                    params=params,
+                    sec_id=stock
+                )
+                logger.info(f'Url has been built: {url}')
 
-            # Get history cursor
-            _INDEX, _PAGESIZE, _TOTAL = self._get_history_cursor(stock, url)
-            start = 0
-            # cnt = 1
-            for _ in tqdm(range(_INDEX, _TOTAL, _PAGESIZE)):
-                data = self._get_get(url + '&start=' + str(start)).text.split()[2:]
-                handler.process_the_data(data)
-                start += len(data)
-            logger.info(f'Data loading for {stock} is completed')
+                # Get history cursor
+                _INDEX, _PAGESIZE, _TOTAL = self._get_history_cursor(stock, url)
+                start = 0
+                # cnt = 1
+                for _ in tqdm(range(_INDEX, _TOTAL, _PAGESIZE), leave=False):
+                    data = self._get_get(url + '&start=' + str(start)).text.split()[2:]
+                    handler.process_the_data(data)
+                    start += len(data)
+                logger.info(f'Data loading for {stock} is completed')
+        except TypeError as e:
+            logger.exception(e, exc_info=False)
 
-    def transfer_data_to_SQL(self):
+    def transfer_data_to_db(self):
+        """
+        Returns:
+
+        """
+        pass
+
+    def get_history_df(self, emb: Dict[str, str] = None,
+                       primary_board: bool = False,
+                       list_level: int = None,
+                       sec_ids: Set[str] = None,
+                       date_interval: str = None):
+        """Retrieves historical data and converts it to pandas.DataFrame format
+        Args:
+            emb:
+            primary_board:
+            list_level:
+            sec_ids:
+            date_interval:
+
+        Returns: pandas.DataFrame object
+        """
+        pass
+
+    def get_moex_news(self):
+        """Receives news from ISS and places it in the database"""
         pass
 
     def _get_get(self, url: str) -> Response:
@@ -303,7 +338,14 @@ class MicexISSClient:
         Returns:
 
         """
-        return self.auth.session.get(url) if self.auth else requests.get(url)
+        try:
+            return self.auth.session.get(url) if self.auth else requests.get(url)
+        except requests.ConnectionError as e:
+            logger.exception(e, exc_info=False)
+        except requests.Timeout as e:
+            logger.exception(e)
+        except requests.RequestException as e:
+            logger.exception(e)
 
     def _get_history_cursor(self, stock: str, url: str) -> Tuple[int, int, int]:
         _INDEX = int(self._get_get(
@@ -317,25 +359,28 @@ class MicexISSClient:
         return _INDEX, _PAGESIZE, _TOTAL
 
     def _get_list_of_stocks(self, list_level: int | None = None, sec_ids: str | Set[str] | None = None) -> List[str]:
-        if list_level or sec_ids:
-            if sec_ids:
-                sec_ids = set(map(lambda el: el.upper(), sec_ids))
-                stocks = [el[0] for el in self.get_stock_exchange_list() if el[0] in sec_ids]
-                if len(stocks) == 0 and list_level:
+        try:
+            if list_level or sec_ids:
+                if sec_ids:
+                    sec_ids = set(map(lambda el: el.upper(), sec_ids))
+                    stocks = [el[0] for el in self.get_stock_exchange_list() if el[0] in sec_ids]
+                    if len(stocks) == 0 and list_level:
+                        if isinstance(list_level, int) and list_level in range(1, 4):
+                            stocks = [el[0] for el in self.get_stock_exchange_list() if el[4] == list_level]
+                        else:
+                            raise InvalidArgs('Invalid both arguments: sec_ids and list_level')
+                    elif len(stocks) == 0 and not list_level:
+                        raise InvalidArgs('No securities found.')
+                else:
                     if isinstance(list_level, int) and list_level in range(1, 4):
                         stocks = [el[0] for el in self.get_stock_exchange_list() if el[4] == list_level]
                     else:
-                        raise InvalidArgs('Invalid both arguments: sec_ids and list_level')
-                elif len(stocks) == 0 and not list_level:
-                    raise InvalidArgs('No securities found.')
+                        raise InvalidArgs('The list level should be an integer from 1 to 3.')
             else:
-                if isinstance(list_level, int) and list_level in range(1, 4):
-                    stocks = [el[0] for el in self.get_stock_exchange_list() if el[4] == list_level]
-                else:
-                    raise InvalidArgs('The list level should be an integer from 1 to 3.')
-        else:
-            stocks = [el[0] for el in self.get_stock_exchange_list()]
-        return stocks
+                stocks = [el[0] for el in self.get_stock_exchange_list()]
+            return stocks
+        except TypeError as e:
+            logger.exception(e, exc_info=False)
 
 
 if __name__ == '__main__':
