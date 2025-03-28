@@ -2,11 +2,11 @@
 
 ### Структура ИСС
 
-![ISS concept](../../docs/img/ISS.png)
+![ISS concept](../../../../docs/img/ISS.png)
 
 ### Интерфейсы блоков ИСС
 
-![ISS concept](../../docs/img/interfaces.png)
+![ISS concept](../../../../docs/img/interfaces.png)
 
 [Программный интерфейс к ИСС](https://www.moex.com/a2193)
 
@@ -129,7 +129,7 @@ http://iss.moex.com/iss/history/engines/stock/markets/shares/boards/tqbr/securit
 
 и далее
 
-![requests_mapping](../../docs/img/reqs_mapping.png)
+![requests_mapping](../../../../docs/img/reqs_mapping.png)
 
 Это базовый паттерн адресов запросов для клиентского приложения, за исключением запроса для списка акации (см.ниже).
 К данному шаблону можно добавлять параметры.
@@ -304,7 +304,7 @@ pip3 install -r ds_reqs.txt
 
 #### Архитектура клиентского приложения
 
-![moex_api_arch](../../docs/img/moex_api_arch.png)
+![moex_api_arch](../../../../docs/img/moex_api_arch.png)
 
 #### Служебные классы
 

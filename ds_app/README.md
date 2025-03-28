@@ -1,3 +1,15 @@
+# Запуск БД
+
+## Запускаем тестовую бд из контейнера:
+
+Версия Docker на момент написания: 
+
+[//]: # (![docker desktop]&#40;../../docs/img/docker_bundle_version.png&#41;)
+<img src="../docs/img/docker_bundle_version.png" width="300">
+
+файл compose.yaml:
+
+```yaml
 services:
   postgres:
     container_name: postgres_container
@@ -39,7 +51,7 @@ services:
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
       - ./init_sql/:/docker-entrypoint-initdb.d
-      - ./moexdb-data:/var/lib/postgresql/data
+      - moexdb-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -84,3 +96,6 @@ volumes:
 networks:
   postgres:
     driver: bridge
+```
+
+

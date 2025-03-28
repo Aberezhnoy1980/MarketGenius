@@ -1,10 +1,6 @@
 # CSV example
-import sys
 
-from moex_api.iss_client import Config
-from moex_api.iss_client import MicexAuth
-from moex_api.iss_client import MicexISSClient
-from exception.ds_exc import InvalidArgs
+from src.clients.moex_api.iss_client import MicexISSClient
 
 
 def main():
@@ -24,10 +20,12 @@ def main():
     # else:
     #     print(my_auth.ensure_auth())
     iss = MicexISSClient()
-    iss.get_history_csv(primary_board=True,
-                        list_level=1,
-                        sec_ids={'sber'},
-                        filepath='/Users/alex/Desktop/sber_primary_board.csv')
+    iss.get_history_csv(
+        primary_board=True,
+        list_level=1,
+        sec_ids={'ydex'},
+        filepath='/Users/alex/Desktop/moex_client_outputs/ydex_primary_board.csv'
+    )
 
 
 if __name__ == '__main__':

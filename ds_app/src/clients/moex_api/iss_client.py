@@ -6,18 +6,15 @@
 
     @copyright: 2025 by Aleksandr Berezhnoy
 """
-import os
-from typing import Any, Set, Dict, Tuple, Union, Type, List
+from typing import List
 import requests
 from requests import Response
 from requests.auth import HTTPBasicAuth
-from datetime import datetime
 import time
 
 import logging
-import pandas
-from ds_app.exception.ds_exc import InvalidArgs
-from moex_api.handlers.handle import *
+from src.exception.ds_exc import InvalidArgs
+from src.clients.moex_api.handlers.handle import *
 from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
