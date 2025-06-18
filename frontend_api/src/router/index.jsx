@@ -1,8 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import AuthPage from '../pages/AuthPage';
-import DashboardPage from '../pages/Home/DashboardPage';
-import RegistrationPage from '../pages/RegistrationPage';
+import AuthPage from '../Pages/AuthPage';
+import DashboardPage from '../Pages/Home/DashboardPage';
+import RegistrationPage from '../Pages/RegistrationPage';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const ProtectedRoute = ({ children }) => {
