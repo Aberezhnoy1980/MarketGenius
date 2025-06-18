@@ -1,4 +1,4 @@
-import RegistrationForm from '../components/auth/RegistrationForm'
+import RegistrationForm from '../components/Auth/RegistrationForm'
 import ToggleThemeButton from '../components/ToggleThemeButton'
 
 export default function RegistrationPage() {
