@@ -1,0 +1,41 @@
+.theme-toggle-button {
+  position: fixed;
+  top: 12px;
+  right: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  z-index: 1000;
+  transition: transform 0.3s;
+}
+
+.theme-toggle-button:hover {
+  transform: scale(1.1);
+}
+
+.theme-icon {
+  font-size: 24px;
+  display: block;
+}
+
+/* Анимация переключения */
+.sun {
+  animation: pulse-sun 2s infinite;
+}
+
+.moon {
+  animation: pulse-moon 2s infinite;
+}
+
+@keyframes pulse-sun {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulse-moon {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(10deg); }
+  100% { transform: rotate(0deg); }
+}

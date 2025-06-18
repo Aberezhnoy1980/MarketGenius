@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+src/simplest_async_s3client/__init__.py
+src/simplest_async_s3client/s3client.py
+src/simplest_async_s3client.egg-info/PKG-INFO
+src/simplest_async_s3client.egg-info/SOURCES.txt
+src/simplest_async_s3client.egg-info/dependency_links.txt
+src/simplest_async_s3client.egg-info/requires.txt
+src/simplest_async_s3client.egg-info/top_level.txt

@@ -1,0 +1,136 @@
+body {
+  font-family: sans-serif;
+  background-color: #f8f9fc;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: 40px auto;
+  background: white;
+  padding: 30px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.block {
+  margin-bottom: 30px;
+}
+
+.button {
+  background-color: #5f65f3;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.button:disabled {
+  background-color: #ccc;
+}
+
+.footer {
+  text-align: center;
+  font-size: 12px;
+  color: #777;
+  margin-top: 40px;
+}
+
+a {
+  color: #5f65f3;
+  text-decoration: none;
+}
+
+#modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  justify-content: center;
+  align-items: center;
+}
+
+#modal-content {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  padding: 20px;
+  width: 90%;
+  height: 90%;
+  overflow-y: auto;
+  border-radius: 8px;
+  position: relative;
+}
+
+#close-modal {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 36px;
+  color: #333;
+  background: #fff;
+  padding: 10px 18px;
+  border-radius: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.button_wrapper {
+  margin-top: 20px;
+}
+
+.btn-buy-access {
+  padding: 10px 18px;
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .container {
+    margin: 20px;
+    padding: 20px;
+  }
+  h1 {
+    font-size: 22px;
+  }
+  .button {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px;
+  }
+  #modal-content {
+    width: 95%;
+    height: 90%;
+    padding: 15px;
+  }
+  #close-modal {
+    top: 10px;
+    right: 10px;
+    font-size: 32px;
+    padding: 8px 14px;
+  }
+  .checkbox-container {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+}/*# sourceMappingURL=Preorder.module.css.map */

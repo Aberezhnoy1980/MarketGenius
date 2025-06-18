@@ -2,15 +2,34 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    DB_HOST: str
-    DB_PORT: int
+    USERS_DB_HOST: str
+    FEATURES_DB_HOST: str
+    USERS_DB_PORT: int
+    FEATURES_DB_PORT: int
     DB_USER: str
     DB_PASS: str
-    DB_NAME: str
+    FEATURES_DB_NAME: str
+    USERS_DB_NAME: str
 
     @property
-    def DB_URL(self):
-        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+    def USERS_DB_URL(self):
+        return (
+            f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.USERS_DB_HOST}:{self.USERS_DB_PORT}/{self.USERS_DB_NAME}")
+
+    @property
+    def SYNC_USERS_DB_URL(self):
+        return (
+            f"postgresql://{self.DB_USER}:{self.DB_PASS}@{self.USERS_DB_HOST}:{self.USERS_DB_PORT}/{self.USERS_DB_NAME}")
+
+    @property
+    def FEATURES_DB_URL(self):
+        return (
+            f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.FEATURES_DB_HOST}:{self.FEATURES_DB_PORT}/{self.FEATURES_DB_NAME}")
+
+    @property
+    def SYNC_FEATURES_DB_URL(self):
+        return (
+            f"postgresql://{self.DB_USER}:{self.DB_PASS}@{self.FEATURES_DB_HOST}:{self.FEATURES_DB_PORT}/{self.FEATURES_DB_NAME}")
 
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str

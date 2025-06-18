@@ -98,4 +98,38 @@ networks:
     driver: bridge
 ```
 
+## Публикуем модуль [simplest_async_s3client](https://pypi.org/project/simplest-async-s3client/) для работы с S3 на PyPI
 
+Регистрируемся на pypi.org и test.pypi.org
+Особенность второго ресурса не только в его предназначении тестирования модулей, но и в том что при установке модуля 
+(pip install) не выйдет подтянуть зависимости
+
+https://packaging.python.org/en/latest/tutorials/packaging-projects/
+
+Добавляем зависимости:
+
+https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
+
+Собираем дистрибутив:
+
+```shell
+python3 -m build
+```
+
+Публикуем для тестирования:
+
+```shell
+python3 -m twine upload --repository testpypi dist/* --verbose
+```
+
+В реальный регистр:
+
+```shell
+python3 -m twine upload dist/* --verbose 
+```
+
+Устанавливаем:
+
+```shell
+pip install simplest_async_s3client
+```

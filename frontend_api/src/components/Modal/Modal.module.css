@@ -1,0 +1,16 @@
+.dialog {
+  border: 1px solid #ccc;
+  width: 90vw;
+  z-index: 100;
+  border-radius: 10px;
+}
+
+.modal_content {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  padding: 20px;
+  overflow-y: auto;
+  border-radius: 8px;
+  position: relative;
+}/*# sourceMappingURL=Modal.module.css.map */

@@ -1,14 +1,22 @@
-user_examples = user_examples = {
+user_examples = {
     "1": {
         "summary": "User1", "value": {
-            "email": "user1@host.domain",
+            "login": "user1",
             "password": "qwerty"
         }
     },
     "2": {
         "summary": "User2", "value": {
-            "email": "user2@host.domain",
+            "login": "user2",
             "password": "password"
+        }
+    }
+}
+
+ticker_examples = {
+    "1": {
+        "summary": "Ticker", "value": {
+            "ticker": "AFLT_final"
         }
     }
 }

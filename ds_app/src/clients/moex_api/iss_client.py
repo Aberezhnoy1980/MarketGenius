@@ -379,6 +379,36 @@ class MicexISSClient:
         except TypeError as e:
             logger.exception(e, exc_info=False)
 
+    async def get_candles_for_dashboard(
+            self,
+            ticker: str = "IMOEX",  # Индекс МосБиржи по умолчанию
+            days: int = 30
+    ) -> List[Dict[str, Union[str, float]]]:
+        """Получаем свечные данные в формате для Lightweight Charts"""
+        params = {
+            'iss.only': 'history',
+            'history.columns': 'TRADEDATE,OPEN,LOW,HIGH,CLOSE',
+            'limit': days
+        }
+
+        url = self.url_builder.build_url(
+            namespace='trading_results',
+            emb={'engines': 'stock', 'markets': 'index'},
+            sec_id=ticker,
+            params=params
+        )
+
+        response = self._get_get(url)
+        data = response.json()['history']['data']
+
+        return [{
+            "time": item[0],  # TRADEDATE
+            "open": float(item[1]),
+            "low": float(item[2]),
+            "high": float(item[3]),
+            "close": float(item[4])
+        } for item in reversed(data)]  # Разворачиваем для хронологического порядка
+
 
 if __name__ == '__main__':
     pass

@@ -188,7 +188,15 @@ networks:
 ```docker
 docker compose --env-file .env up
 ```
+Запуск из контейнера
 
+```shell
+docker build -t mg-backend-api .
+```
+
+```shell
+docker run -p 8000:8000 mg-backend-api 
+```
 Миграции
 Инициализация
 
@@ -199,9 +207,9 @@ alembic init src/migrations
 Файл env.py (миграции не асинхронные)
 
 ```python
-from backend_api.src.config import settings
-from backend_api.src.database import Base
-from backend_api.src.models.users import UsersOrm
+from src.config import settings
+from src.users_db import Base
+from src.models.users import UsersOrm
 
 config.set_main_option("sqlalchemy.url", f"{settings.DB_URL}?async_fallback=True")
 
@@ -210,7 +218,7 @@ target_metadata = Base.metadata
 
 Создание скрипта
 
-```SHEL
+```SHELL
 alembic revision --autogenerate -m "init migration"
 ```
 

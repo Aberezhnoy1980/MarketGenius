@@ -1,0 +1,1315 @@
+/* Основные стили dashboard */
+.dashboard {
+  display: flex;
+  height: 100vh;
+  background-color: var(--page-bg);
+}
+
+.sidebar {
+  width: 25%;
+  background-color: var(--form-bg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.main {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.rightbar {
+  width: 25%;
+  background-color: var(--form-bg);
+  padding: 20px;
+  border-left: 1px solid var(--border-color);
+  overflow-y: auto;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для избранного */
+.favorites {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.favoritesHeader {
+  background-color: var(--input-bg);
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.favoritesTitle {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.favoritesToggleBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.favoritesList {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.favoriteStock {
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 5px;
+  transition: background-color 0.2s;
+}
+
+.favoriteStock:hover {
+  background-color: rgba(93, 120, 255, 0.1);
+}
+
+.favoriteStock.active {
+  background-color: rgba(93, 120, 255, 0.2);
+  font-weight: bold;
+}
+
+/* Стили для формы прогноза */
+.forecastDate {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.forecastDateHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.forecastDateHeader label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.selectedTickerContainer {
+  font-size: 14px;
+}
+
+.selectedTicker {
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.daysButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.daysButtons button {
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.daysButtons button:hover {
+  border-color: var(--primary-color);
+}
+
+.daysButtons button.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.forecastCalcContainer {
+  margin-top: 15px;
+}
+
+.forecastCalcButton {
+  width: 100%;
+  padding: 10px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.forecastCalcButton:hover {
+  background: var(--primary-hover);
+}
+
+.forecastCalcButton:disabled {
+  background: var(--border-color);
+  cursor: not-allowed;
+}
+
+.chartContainer {
+  --text-primary: #1e1e2d;
+  /* для светлой темы */
+  --form-bg: #ffffff;
+  --border-color: #e0e0e0;
+  --primary-color: #5d78ff;
+  position: relative;
+  width: 100%;
+  height: 400px;
+  background-color: var(--chart-bg);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .chartContainer {
+  --text-primary: #ffffff;
+  --form-bg: #2a2a3c;
+  --border-color: #3a3a4c;
+}
+
+.chart {
+  width: 100%;
+  height: 100%;
+}
+
+.chartLoading,
+.chartError,
+.chartHint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.chartControls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.chartTypeToggle {
+  display: flex;
+  gap: 10px;
+}
+
+.chartTypeButton {
+  padding: 5px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.chartTypeButton.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.intervalSelector {
+  display: flex;
+  gap: 10px;
+}
+
+.intervalButton {
+  padding: 5px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.intervalButton.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.chartLegend {
+  position: absolute;
+  background: var(--form-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 10;
+  display: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.forecast-label {
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.chartLoading::after {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(93, 120, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s ease-in-out infinite;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+/* Стили для новостей */
+.newsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.newsBlock {
+  background-color: var(--form-bg);
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.newsTitle {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+  font-size: 16px;
+}
+
+.newsContent {
+  max-height: 37vh;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.newsText {
+  margin: 5px 0;
+}
+
+.newsDate {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+.newsLoading {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-secondary);
+}
+
+/* Обновленные стили для новостей */
+.newsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px 0;
+}
+
+.expandIcon {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--primary-color);
+  width: 20px;
+  text-align: center;
+}
+
+.hashtag {
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.newsText {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.newsContent {
+  padding: 5px 0;
+  white-space: pre-wrap;
+  max-height: 34vh;
+  overflow-y: auto;
+  padding: 5px 0;
+}
+
+/* Стили для табов */
+.tabsContainer {
+  background-color: var(--form-bg);
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+  max-height: 500px;
+  /* Фиксированная высота */
+  overflow-y: auto;
+  /* Полоса прокрутки при необходимости */
+  display: flex;
+  flex-direction: column;
+}
+
+.tabsHeader {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 15px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  /* Чтобы не сжимался при прокрутке */
+}
+
+.tabButton {
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.tabButton:hover {
+  color: var(--primary-color);
+}
+
+.activeTab {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  font-weight: bold;
+}
+
+.tabContent {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 100px;
+  padding: 10px;
+  color: var(--text-secondary);
+}
+
+/* Стили для новостей MOEX */
+.moexNewsContainer {
+  padding: 15px;
+}
+
+.moexNewsTitle {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: var(--primary-color);
+}
+
+.moexNewsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.moexNewsItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  padding: 6px 10px;
+  background-color: var(--input-bg);
+  border-radius: 6px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.moexNewsItem:hover {
+  background-color: rgba(93, 120, 255, 0.1);
+}
+
+.newsLinkIcon {
+  color: var(--text-secondary);
+  opacity: 0.7;
+  transition: all 0.2s;
+  display: flex;
+  padding: 2px;
+  margin-left: 8px;
+}
+
+.newsLinkIcon:hover {
+  color: var(--primary-color);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.showMoreButton {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.showMoreButton:hover {
+  background: rgba(93, 120, 255, 0.1);
+}
+
+/* Обновленные стили для новостей MOEX */
+.moexNewsContainer {
+  padding: 15px;
+  background-color: var(--form-bg);
+  border-radius: 8px;
+  margin-top: 20px;
+  max-height: 400px;
+  overflow-y: auto; 
+  width: 100%; 
+}
+
+/* Обновленные стили для контейнера с табами аналитики */
+.tabsContainer {
+  background-color: var(--form-bg);
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+  max-height: 400px; 
+  overflow-y: auto;
+  width: 100%; 
+}
+
+/* Обновленные стили для основного контента */
+.main {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: visible; /* Меняем на visible, чтобы избежать проблем с прокруткой */
+}
+
+/* Обновленные стили для контейнера с графиком */
+.chartContainer {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  background-color: var(--chart-bg);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+/* Обновленные стили для списка новостей */
+.moexNewsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px; /* Оставляем место для кнопки "Показать еще" */
+  overflow-y: auto;
+}
+
+/* Обновленные стили для кнопки "Показать еще" */
+.showMoreButton {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: center;
+}
+
+.showMoreButton:hover {
+  background: var(--primary-hover);
+}
+
+.searchContainer {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.dropdown {
+  position: absolute;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--form-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-top: 5px;
+  padding: 0;
+  list-style: none;
+  z-index: 100;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown li {
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dropdown li:hover {
+  background-color: rgba(93, 120, 255, 0.1);
+}
+
+.tickerSymbol {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.tickerName {
+  flex-grow: 1;
+}
+
+.starButton {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 10px;
+  padding: 0 5px;
+}
+
+.starButton:hover {
+  color: gold;
+}
+
+.starButton.favorited {
+  color: gold;
+}
+
+/* Стили для формы прогноза */
+.datePickerWrapper {
+  margin: 15px 0;
+}
+
+.datePicker {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+}
+
+/* Стили для избранного */
+.favorites {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.favoritesHeader {
+  background-color: var(--input-bg);
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.favoritesTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.favoritesList {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.favoriteStock {
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.favoriteStock:hover {
+  background-color: rgba(93, 120, 255, 0.1);
+}
+
+.favoriteStock.active {
+  background-color: rgba(93, 120, 255, 0.2);
+  font-weight: bold;
+}
+
+.emptyFavorites {
+  padding: 15px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Стили для звездочек */
+.starButton {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0 5px;
+  transition: all 0.2s;
+}
+
+.starButton:hover {
+  transform: scale(1.2);
+}
+
+.starButton.favorited {
+  color: gold;
+}
+
+.starButton:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.loading, .error {
+  padding: 2rem;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+/* News Section Styles */
+.newsLine {
+  margin: 8px 0;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+}
+
+.indentedLine {
+  margin-left: 24px;
+}
+
+.lineIcon {
+  margin-right: 8px;
+  font-size: 1.1em;
+  line-height: 1;
+  min-width: 20px;
+  text-align: center;
+}
+
+.lineText {
+  flex: 1;
+}
+
+.newsFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9em;
+}
+
+.telegramLink {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.telegramLink:hover {
+  color: #0088cc;
+}
+
+.telegramIcon {
+  width: 18px;
+  height: 18px;
+  margin-right: 5px;
+  fill: currentColor;
+}
+
+.newsDate {
+  color: var(--text-secondary);
+  font-size: 0.9em;
+}
+
+/* Header Styles */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background-color: var(--header-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.navIcon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background-color 0.2s;
+}
+
+.navIcon:hover {
+  background-color: var(--hover-bg);
+}
+
+.navIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.themeToggle {
+  padding: 6px;
+}
+
+/* Стили для ошибок */
+.error {
+    padding: 10px;
+    background-color: #ffebee;
+    color: #c62828;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border-left: 4px solid #c62828;
+}
+
+/* Стили для аналитики */
+.analysisHeader {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.analysisHeader h3 {
+    margin: 0 0 5px 0;
+    color: var(--primary-color);
+}
+
+.analysisHeader span {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.analysisSection {
+    margin-bottom: 20px;
+}
+
+.analysisSection h4 {
+    margin: 0 0 10px 0;
+    color: var(--text-primary);
+}
+
+.analysisGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.analysisItem {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: var(--input-bg);
+    border-radius: 6px;
+}
+
+.analysisLabel {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.analysisValue {
+    color: var(--text-secondary);
+}
+
+.forecastSummary {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.forecastValue {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 10px 0;
+}
+
+.positive {
+    color: #26a69a;
+    margin-left: 8px;
+}
+
+.negative {
+    color: #ef5350;
+    margin-left: 8px;
+}
+
+.forecastNote {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Добавляем стили для сообщений о состоянии графика */
+.chartLoading,
+.chartHint,
+.chartError {
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--input-bg);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+.chartError {
+    color: #ef5350;
+    border-left: 4px solid #ef5350;
+    padding-left: 15px;
+}
+
+/* Стили профиля */
+.profilePanel {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 350px;
+  height: 100vh;
+  background-color: var(--form-bg);
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  transition: right 0.3s ease;
+  z-index: 1000;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.profilePanel.visible {
+  right: 0;
+}
+
+.profileHeader {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.profileContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.avatarPlaceholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+}
+
+.userInfo {
+  text-align: center;
+}
+
+.userInfo h3 {
+  margin-bottom: 5px;
+  color: var(--text-primary);
+}
+
+.userInfo p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.subscriptionStatus {
+  background: var(--input-bg);
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.subscriptionStatus h4 {
+  margin-top: 0;
+  color: var(--text-primary);
+}
+
+.subscriptionStatus p.active {
+  color: #4caf50;
+}
+
+.subscriptionStatus p.inactive {
+  color: #f44336;
+}
+
+.profileActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subscribeButton {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.subscribeButton:hover {
+  background: var(--primary-hover);
+}
+
+.logoutButton {
+  background: none;
+  border: 1px solid var(--border-color);
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.logoutButton:hover {
+  background: rgba(244, 67, 54, 0.1);
+  border-color: #f44336;
+}
+
+.profileButton {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  z-index: 999;
+}
+
+.profileButton:hover {
+  color: var(--primary-color);
+}
+
+/* Добавить в существующие стили */
+
+.profileOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+
+.profileOverlay.visible {
+    display: block;
+}
+
+.profilePanel {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 350px;
+    height: 100vh;
+    background-color: var(--form-bg);
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease;
+    z-index: 1000;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.profilePanel.visible {
+    right: 0;
+}
+
+.profileHeader {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-primary);
+}
+
+.profileContent {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.avatarPlaceholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+}
+
+.userInfo {
+    text-align: center;
+}
+
+.userInfo h3 {
+    margin-bottom: 5px;
+    color: var(--text-primary);
+}
+
+.userInfo p {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.subscriptionStatus {
+    background: var(--input-bg);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.subscriptionStatus h4 {
+    margin-top: 0;
+    color: var(--text-primary);
+}
+
+.subscriptionStatus p.active {
+    color: #4caf50;
+}
+
+.subscriptionStatus p.inactive {
+    color: #f44336;
+}
+
+.profileActions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.subscribeButton {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.subscribeButton:hover {
+    background: var(--primary-hover);
+}
+
+.logoutButton {
+    background: none;
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.logoutButton:hover {
+    background: rgba(244, 67, 54, 0.1);
+    border-color: #f44336;
+}
+
+.debugInfo {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 10;
+}
+
+/* */
+/* Header Styles */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background-color: var(--header-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 60px;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logoIcon {
+  font-size: 1.3em;
+}
+
+.nav {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.navIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: all 0.2s;
+}
+
+.navIcon:hover {
+  background-color: var(--hover-bg);
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}
+
+.themeToggle {
+  padding: 8px;
+}
+
+/* Footer Styles */
+.footer {
+  background-color: var(--header-bg);
+  padding: 20px;
+  border-top: 1px solid var(--border-color);
+  margin-top: auto;
+}
+
+.footerContent {
+  display: flex;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.footerSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footerSection h4 {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 16px;
+}
+
+.footerSection p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}

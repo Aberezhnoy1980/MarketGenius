@@ -1,0 +1,22 @@
+[project]
+name = "simplest_async_s3client"
+version = "0.0.7"
+authors = [
+  { name="Aleksandr Berezhnoy", email="aberezhnoy1980@gmail.com" },
+]
+description = "A simple async client for aws s3 storage"
+readme = "README.md"
+dependencies = [
+  "aiobotocore==2.13.0",
+]
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/Aberezhnoy1980/MarketGenius/tree/main/ds_app/src/clients/s3_client"
+Issues = "https://github.com/Aberezhnoy1980/MarketGenius/issues"

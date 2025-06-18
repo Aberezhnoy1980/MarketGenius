@@ -1,0 +1,1577 @@
+<!--
+  В этом проекте используются адаптированные UI-компоненты, полученные с ресурса Uiverse.io.
+  Компоненты распространяются под лицензией MIT, которая требует сохранения уведомлений об авторских правах и ссылок на оригинальные источники.
+
+  Использованные компоненты:
+
+  1) Переключатель темы (светлая/тёмная)
+     Оригинал: https://uiverse.io/Type-Delta/happy-mule-45
+     Автор: Type-Delta
+
+  2) Кнопка "Рассчитать" для вычисления прогноза после выбора даты
+     Оригинал: https://uiverse.io/milegelu/tough-cobra-42
+     Автор: milegelu
+
+  3) Окно авторизации и регистрации
+     Оригинал: https://uiverse.io/glisovic01/stale-chipmunk-33
+     Автор: glisovic01
+
+  4) Кнопка поиска акций
+     Оригинал: https://uiverse.io/reglobby/hard-warthog-73
+     Автор: reglobby
+
+  Все заимствования адаптированы под нужды проекта и используются в полном соответствии с условиями лицензии MIT.
+-->
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Прототип анализа акций</title>
+  <!-- Подключаем Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Подключаем flatpickr и русскую локаль -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+  <!-- Подключаем шрифт Inter с весом 400 и 800 -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------------------- */
+    /* Переменные тем         */
+    /* ---------------------- */
+    :root {
+      /* Тёмная тема (по умолчанию) */
+      --bg-color-dark: #1e1e2f;
+      --sidebar-bg-dark: #252535;
+      --main-bg-dark: #29293d;
+      --text-color-dark: #cfd8dc;
+      --border-color-dark: #3e4152;
+      --link-color-dark: #90caf9;
+      --shadow-color-dark: rgba(0,0,0,0.6);
+
+      /* Светлая тема */
+      --bg-color-light: #f4f6fa;
+      --sidebar-bg-light: #ffffff;
+      --main-bg-light: #ffffff;
+      --text-color-light: #2c2c2c;
+      --border-color-light: #cfcfcf;
+      --link-color-light: #1976D2;
+      --shadow-color-light: rgba(0,0,0,0.2);
+
+      /* Общие переменные */
+      --accent-color: #1976D2;
+      --accent-color-hover: #1565C0;
+    }
+
+    body:not(.light-theme) {
+      --bg-color: var(--bg-color-dark);
+      --sidebar-bg: var(--sidebar-bg-dark);
+      --main-bg: var(--main-bg-dark);
+      --text-color: var(--text-color-dark);
+      --border-color: var(--border-color-dark);
+      --link-color: var(--link-color-dark);
+      --shadow-color: var(--shadow-color-dark);
+    }
+    body.light-theme {
+      --bg-color: var(--bg-color-light);
+      --sidebar-bg: var(--sidebar-bg-light);
+      --main-bg: var(--main-bg-light);
+      --text-color: var(--text-color-light);
+      --border-color: var(--border-color-light);
+      --link-color: var(--link-color-light);
+      --shadow-color: var(--shadow-color-light);
+    }
+
+    /* Сбрасываем отступы, задаём общие настройки */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.3s, color 0.3s;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---------------------- */
+    /* Общий переключатель темы */
+    /* ---------------------- */
+    .theme-toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 999;
+    }
+    .themeToggle {
+      width: 40px;
+      height: 40px;
+      display: inline-block;
+      color: #bbb;
+    }
+    .st-sunMoonThemeToggleBtn {
+      position: relative;
+      cursor: pointer;
+      display: block;
+    }
+    .st-sunMoonThemeToggleBtn .themeToggleInput {
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 0;
+      cursor: pointer;
+    }
+    .st-sunMoonThemeToggleBtn svg {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(40deg);
+      width: 22px;
+      height: 22px;
+      transition: transform 0.4s ease;
+    }
+    .st-sunMoonThemeToggleBtn svg .sunMoon {
+      transform-origin: center center;
+      transition: inherit;
+      transform: scale(1);
+    }
+    .st-sunMoonThemeToggleBtn svg .sunRay {
+      transform-origin: center center;
+      transform: scale(0);
+    }
+    .st-sunMoonThemeToggleBtn svg mask > circle {
+      transition: transform 0.64s cubic-bezier(0.41, 0.64, 0.32, 1.575);
+      transform: translate(0px, 0px);
+    }
+    .st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg {
+      transform: translate(-50%, -50%) rotate(90deg);
+    }
+    .st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg mask > circle {
+      transform: translate(16px, -3px);
+    }
+    .st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg .sunMoon {
+      transform: scale(0.55);
+    }
+    .st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg .sunRay {
+      animation: showRay 0.4s ease forwards;
+    }
+    @keyframes showRay {
+      0% { transform: scale(0); }
+      100% { transform: scale(1); }
+    }
+
+    /* ---------------------- */
+    /* Блок авторизации       */
+    /* ---------------------- */
+    #loginSection {
+      margin: auto;
+      margin-top: 8vh;
+      width: 400px;
+      padding: 40px;
+      background: var(--main-bg);
+      box-shadow: 0 15px 25px rgba(0,0,0,0.6);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+    #loginSection p.title {
+      margin: 0 0 30px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    #loginSection form {
+      display: flex;
+      flex-direction: column;
+    }
+    .user-box {
+      position: relative;
+      margin-bottom: 30px;
+    }
+    .user-box input {
+      width: 100%;
+      padding: 10px 0;
+      font-size: 16px;
+      color: var(--text-color);
+      border: none;
+      border-bottom: 1px solid var(--text-color);
+      background: transparent;
+      outline: none;
+    }
+    .user-box label {
+      position: absolute;
+      top: 10px;
+      left: 0;
+      font-size: 16px;
+      color: var(--text-color);
+      pointer-events: none;
+      transition: 0.5s;
+    }
+    .user-box input:focus ~ label,
+    .user-box input:valid ~ label {
+      top: -20px;
+      left: 0;
+      color: var(--text-color);
+      font-size: 12px;
+    }
+    .submit-btn {
+      position: relative;
+      display: inline-block;
+      padding: 10px 20px;
+      font-weight: bold;
+      font-size: 16px;
+      text-transform: uppercase;
+      overflow: hidden;
+      margin-top: 20px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-color);
+    }
+    .submit-btn:hover {
+      background: var(--text-color);
+      color: var(--main-bg);
+      border-radius: 5px;
+    }
+    .submit-btn span {
+      position: absolute;
+      display: block;
+    }
+    #loginSection p.info {
+      text-align: center;
+      font-size: 14px;
+      margin-top: 20px;
+    }
+    #loginSection p.info a {
+      color: var(--text-color);
+      text-decoration: none;
+    }
+    #loginSection p.info a:hover {
+      text-decoration: underline;
+    }
+
+    /* ---------------------- */
+    /* Блок (контейнер) с основным интерфейсом */
+    /* ---------------------- */
+    #mainContent {
+      flex: 1;
+      display: none; /* Скрыто до авторизации */
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Единый шрифт и размер для левой колонки */
+    .sidebar,
+    .sidebar * {
+      font-size: 14px;
+      font-weight: 800;
+    }
+    /* Исключаем поле даты из единых настроек */
+    .forecast-date .date-input {
+      font-size: 16px;
+      font-weight: normal;
+    }
+    .sidebar {
+      width: 25%;
+      background-color: var(--sidebar-bg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 2px 0 5px var(--shadow-color);
+      overflow-y: auto;
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+    .favorites {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s;
+      margin-bottom: 30px;
+    }
+    .favorites-header {
+      background-color: var(--main-bg);
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .favorites-header .favorites-title {
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+    }
+    .favorites-header button {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: var(--text-color);
+      cursor: pointer;
+    }
+    .favorites-list {
+      max-height: 200px; /* Ограничение по высоте для 5 элементов (примерно 5 * 40px) */
+      overflow-y: auto;  /* Включаем вертикальную прокрутку */
+    }
+
+    .favorite-stock {
+      border: 1px solid transparent;
+      border-radius: 5px; 
+      padding: 5px;  
+      margin-bottom: 0;    
+      transition: background-color 0.3s;
+      cursor: pointer;
+    }
+    .favorite-stock:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+    .favorite-stock .stock-info {
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+    }
+    .search-block {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s;
+      margin-bottom: 30px;
+    }
+    .search-block-body {
+      background-color: var(--sidebar-bg);
+      padding: 10px;
+      position: relative;
+    }
+    .input {
+      border: 2px solid transparent;
+      width: 15em;
+      height: 2.5em;
+      padding-left: 0.8em;
+      outline: none;
+      background-color: #F3F3F3;
+      border-radius: 10px;
+      transition: all 0.5s;
+    }
+    .input:hover,
+    .input:focus {
+      border: 2px solid #4A9DEC;
+      box-shadow: 0px 0px 0px 7px rgba(74, 157, 236, 0.2);
+      background-color: white;
+    }
+    .search-results {
+      max-height: 150px;
+      overflow-y: auto;
+      background-color: var(--sidebar-bg);
+      display: none;
+      margin-top: 5px;
+    }
+    .search-item {
+      padding: 5px;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+      cursor: pointer;
+    }
+    .search-item:hover {
+      background-color: var(--sidebar-bg);
+    }
+    .search-item span {
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+    }
+    .favorite-btn {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .favorite-btn:hover {
+      transform: scale(0.9);
+    }
+    .star-icon {
+      width: 17px;
+      height: 17px;
+    }
+    .star-icon.inactive {
+      fill: none;
+      stroke: var(--text-color);
+      stroke-width: 2;
+    }
+    .star-icon.active {
+      fill: #F59E0B;
+      stroke: #F59E0B;
+      stroke-width: 2;
+    }
+    .forecast-date {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .forecast-date-header {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .forecast-date label {
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 800;
+    }
+    .selected-ticker {
+      font-size: 12px;
+      font-weight: bold;
+      color: rgba(44,44,44,0.8);
+    }
+    body:not(.light-theme) .selected-ticker {
+      color: rgba(207,216,220,0.8);
+    }
+    .date-picker-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .date-input {
+      width: 100%;
+      padding: 8px 40px 8px 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: var(--main-bg);
+      color: var(--text-color);
+    }
+    .date-picker-button {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+    body:not(.light-theme) .calendar-icon {
+      fill: #fff;
+    }
+    body:not(.light-theme) .calendar-icon line {
+      stroke: var(--main-bg);
+    }
+    .date-picker-wrapper .flatpickr-calendar {
+      position: absolute;
+      top: 100% !important;
+      left: 0 !important;
+    }
+
+
+    .main {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      transition: background-color 0.3s;
+    }
+    .chart-controls {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 10px;
+    }
+    .chart-type-toggle {
+      display: inline-flex;
+      background-color: var(--main-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .chart-type-toggle button {
+      border: none;
+      background: none;
+      color: var(--text-color);
+      padding: 5px 7px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+    }
+    .chart-type-toggle button:hover {
+      background-color: var(--accent-color);
+      color: #fff;
+    }
+    .chart-type-toggle button.active {
+      background-color: var(--accent-color);
+      color: #fff;
+    }
+    .chart-type-toggle svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+    .interval-selector {
+      display: flex;
+      gap: 10px;
+    }
+    .interval-selector button {
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      background-color: var(--main-bg);
+      color: var(--text-color);
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .interval-selector button.active,
+    .interval-selector button:hover {
+      background-color: var(--accent-color);
+      color: #fff;
+    }
+    .graph {
+      background-color: var(--main-bg);
+      border-radius: 15px;
+      box-shadow: 0 6px 15px var(--shadow-color);
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+    .metrics {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .metric {
+      background-color: var(--sidebar-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+      min-width: 150px;
+      flex: 1;
+      font-size: 0.7em;
+      text-align: center;
+      box-shadow: 0 6px 15px var(--shadow-color);
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+    .metric h3 {
+      margin: 0;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    .metric p {
+      margin: 0;
+    }
+    .rightbar {
+      width: 25%;
+      background-color: var(--sidebar-bg);
+      border-left: 1px solid var(--border-color);
+      padding: 20px;
+      overflow-y: auto;
+      box-shadow: -2px 0 5px var(--shadow-color);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+    .rightbar * {
+      font-size: 14px;
+      font-weight: 800;
+      font-family: 'Inter', sans-serif;
+    }
+    .news-section, .opinions-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .news-section h2, .opinions-section h2 {
+      margin: 0;
+    }
+    .news-item {
+      padding: 10px;
+      border-radius: 8px;
+      background-color: var(--main-bg);
+      border: 1px solid var(--border-color);
+      transition: background-color 0.3s;
+      cursor: default;
+      position: relative;
+      font-size: 0.8em;
+    }
+    .news-item:hover {
+      background-color: #d3d3d3;
+      color: #000;
+    }
+    .news-source {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.8em;
+      color: var(--link-color);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .news-source:hover {
+      text-decoration: underline;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.3s;
+    }
+    .modal.show {
+      display: flex;
+    }
+    .modal-content {
+      background-color: var(--main-bg);
+      color: var(--text-color);
+      width: 90vw;
+      max-width: 800px;
+      max-height: 90vh;
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+      transform-origin: top left;
+      overflow: visible;
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      font-size: 24px;
+      background: none;
+      border: none;
+      color: var(--text-color);
+    }
+    .modal-close-btn:hover {
+      color: var(--accent-color);
+    }
+    .modal-intervals {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    .modal-intervals button {
+      padding: 6px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background-color: var(--main-bg);
+      color: var(--text-color);
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+      font-size: 0.8em;
+    }
+    .modal-intervals button.active,
+    .modal-intervals button:hover {
+      background-color: var(--accent-color);
+      color: #fff;
+    }
+    .modal-multipliers {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .modal-multiplier {
+      position: relative;
+      background-color: var(--sidebar-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+      min-width: 120px;
+      text-align: center;
+      box-shadow: 0 6px 15px var(--shadow-color);
+      cursor: default;
+      font-size: 0.8em;
+    }
+    .modal-multiplier-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .modal-tooltip {
+      position: fixed;
+      background-color: var(--main-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px;
+      width: 200px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      z-index: 10000;
+      display: none;
+      white-space: pre-line;
+      font-size: 0.8em;
+    }
+
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      font-family: "Arial", sans-serif;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    .tooltiptext {
+      visibility: hidden;
+      width: 100px;
+      background-color: rgba(51, 51, 51, 0.7);
+      color: #fff;
+      text-align: center;
+      border-radius: 5px;
+      padding: 5px;
+      font-size: 8px;
+      font-family: 'Inter', sans-serif;
+      position: absolute;
+      z-index: 1;
+      bottom: 100%;
+      left: 50%;
+      translateX: -50%;
+      opacity: 0,7;
+      transition: opacity 0.3s;
+    }
+    .tooltiptext::after {
+      content: none;
+      border: none;
+    }
+
+    .tooltip .icon {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      background-color: #d3d3d3;
+      color: #fff;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 1em;
+      font-size: 0.8em;
+    }
+    /* Крестик в выбранном тикере */
+    .ticker-close {
+      font-size: 12px;
+      margin-left: 5px;
+      cursor: pointer;
+      color: #ff4d4d;
+    }
+
+    /* Контейнер для кнопки (отступ сверху) */
+    .forecast-calc-container {
+      margin-top: 10px;
+    }
+
+    /* Стили кнопки расчёта, адаптированные под текущую верстку */
+    .forecast-calc-button {
+      --bezier: cubic-bezier(0.22, 0.61, 0.36, 1);
+      --edge-light: hsla(0, 0%, 50%, 0.8);
+      --text-light: rgba(255, 255, 255, 0.4);
+      --back-color: 240, 40%;
+      
+      display: flex;
+      align-items: center;
+      justify-content: center; /* Центрирование иконки и текста */
+      gap: 0.5em;
+      width: 50%;           /* Ширина кнопки уменьшена до 50% */
+      margin: 0 auto;       /* Кнопка выравнивается по центру */
+      padding: 8px 16px;
+      font-size: 16px;
+      font-weight: bold;
+      color: hsla(0, 0%, 90%);
+      
+      background: linear-gradient(
+        140deg,
+        hsla(var(--back-color), 50%, 1) 20%,
+        hsla(var(--back-color), 50%, 0.6) 100%
+      );
+      
+      border: none;
+      border-radius: 8px;
+      box-shadow: inset 0.4px 1px 4px var(--edge-light);
+      cursor: pointer;
+      transition: all 0.1s var(--bezier);
+    }
+
+    .forecast-calc-button:hover {
+      --edge-light: hsla(0, 0%, 50%, 1);
+      transform: scale(1.05);
+    }
+
+    .forecast-calc-button:active {
+      transform: scale(1);
+    }
+
+    /* Новый CSS для переопределения стилей flatpickr */
+    /* Уменьшаем окно календаря на 30% и центрируем его относительно контейнера выбора даты */
+    .flatpickr-calendar {
+      transform: scale(0.7) !important;
+      transform-origin: top left !important;
+    }
+
+    /* Применяем шрифт Inter и уменьшаем размер шрифта до 12px для всех элементов календаря */
+    .flatpickr-calendar,
+    .flatpickr-calendar * {
+      font-size: 12px !important;
+      font-family: 'Inter', sans-serif !important;
+    }
+  </style>
+</head>
+
+<body class="light-theme">
+  <!-- Переключатель темы -->
+  <div class="theme-toggle">
+    <label for="themeToggle" class="themeToggle st-sunMoonThemeToggleBtn" title="Переключить тему">
+      <input type="checkbox" id="themeToggle" class="themeToggleInput" checked />
+      <svg viewBox="0 0 20 20" fill="currentColor" stroke="none">
+        <mask id="moon-mask">
+          <rect x="0" y="0" width="20" height="20" fill="white"></rect>
+          <circle cx="11" cy="3" r="8" fill="black"></circle>
+        </mask>
+        <circle class="sunMoon" cx="10" cy="10" r="8" mask="url(#moon-mask)"></circle>
+        <g>
+          <circle class="sunRay sunRay1" cx="18" cy="10" r="1.5"></circle>
+          <circle class="sunRay sunRay2" cx="14" cy="16.928" r="1.5"></circle>
+          <circle class="sunRay sunRay3" cx="6" cy="16.928" r="1.5"></circle>
+          <circle class="sunRay sunRay4" cx="2" cy="10" r="1.5"></circle>
+          <circle class="sunRay sunRay5" cx="6" cy="3.1718" r="1.5"></circle>
+          <circle class="sunRay sunRay6" cx="14" cy="3.1718" r="1.5"></circle>
+        </g>
+      </svg>
+    </label>
+  </div>
+
+  <!-- Блок авторизации -->
+  <div id="loginSection">
+    <p class="title">Авторизация</p>
+    <form id="authForm">
+      <div class="user-box">
+        <input type="text" name="nickname" required>
+        <label>Никнейм</label>
+      </div>
+      <div class="user-box">
+        <input type="password" name="password" required>
+        <label>Пароль</label>
+      </div>
+      <button type="submit" class="submit-btn">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        Войти
+      </button>
+    </form>
+    <p class="info">Нет аккаунта? <a href="#">Зарегистрироваться!</a></p>
+  </div>
+
+  <!-- Основной контент страницы (изначально скрыт) -->
+  <div id="mainContent">
+    <div class="container">
+      <!-- Сайдбар -->
+      <div class="sidebar">
+        <div class="favorites">
+          <div class="favorites-header" id="favoritesHeader">
+            <span class="favorites-title">Избранные акции</span>
+            <button id="favoritesToggleBtn">+</button>
+          </div>
+          <div class="favorites-list" id="favoritesList"></div>
+        </div>
+        <div class="search-block" id="searchBlock">
+          <div class="search-block-body">
+            <input type="text" id="stockSearch" class="input" placeholder="Поиск акций...">
+            <div class="search-results" id="searchResults"></div>
+          </div>
+        </div>
+        <!-- Блок выбора даты с кнопкой "Рассчитать" -->
+        <div class="forecast-date">
+          <div class="forecast-date-header">
+            <label for="forecast-date">Выберите дату прогноза</label>
+            <div id="selectedTickerContainer"></div>
+          </div>
+          <div class="date-picker-wrapper">
+            <input type="text" id="forecast-date" class="date-input" placeholder="дд.мм.гг">
+            <button class="date-picker-button" type="button" title="Открыть календарь">
+              <svg class="calendar-icon" viewBox="0 0 24 24" width="24" height="24">
+                <rect x="3" y="4" width="18" height="18" rx="4" ry="4"></rect>
+                <line x1="3" y1="10" x2="21" y2="10" stroke="#fff" stroke-width="2"></line>
+                <line x1="7" y1="2" x2="7" y2="6" stroke="#fff" stroke-width="2"></line>
+                <line x1="17" y1="2" x2="17" y2="6" stroke="#fff" stroke-width="2"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="forecast-calc-container">
+            <button class="forecast-calc-button">
+              <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"></path>
+              </svg>
+              Рассчитать
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Центральная колонка -->
+      <div class="main">
+        <div class="chart-controls">
+          <div class="chart-type-toggle" id="chartTypeToggle">
+            <button data-type="line" class="active" id="lineBtn">
+              <svg viewBox="0 0 24 24">
+                <path d="M2 19l7-7 5 5 8-8-2-2-6 6-5-5-7 7v6z"></path>
+              </svg>
+              Линия
+            </button>
+            <button data-type="candle" id="candleBtn">
+              <svg viewBox="0 0 24 24">
+                <rect x="10" y="4" width="4" height="12" fill="currentColor"></rect>
+                <line x1="12" y1="2" x2="12" y2="4" stroke="currentColor" stroke-width="2"></line>
+                <line x1="12" y1="16" x2="12" y2="22" stroke="currentColor" stroke-width="2"></line>
+              </svg>
+              Свечи
+            </button>
+          </div>
+          <div class="interval-selector" id="intervalSelector">
+            <button data-days="1">1 день</button>
+            <button data-days="7" class="active">1 неделя</button>
+            <button data-days="30">1 месяц</button>
+            <button data-days="180">6 месяцев</button>
+          </div>
+        </div>
+
+        <div class="graph">
+          <canvas id="stockChart"></canvas>
+        </div>
+
+        <div class="metrics">
+          <div class="metric">
+            <h3>Текущая цена</h3>
+            <p>150.25 ₽</p>
+          </div>
+          <div class="metric">
+            <h3>Точность прогноза</h3>
+            <p>95%</p>
+          </div>
+          <div class="metric">
+            <h3>Прогноз</h3>
+            <p>160.75 ₽</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Правая колонка -->
+      <div class="rightbar">
+        <div class="news-section">
+          <h2>Новости</h2>
+          <div class="news-item" data-news="Подробности новости 1: Рост акций Сбербанка">
+            Новость 1: Рост акций Сбербанка
+            <a href="https://example.com/news1" target="_blank" class="news-source">Источник</a>
+          </div>
+          <div class="news-item" data-news="Подробности новости 2: Обвал цен на нефть">
+            Новость 2: Обвал цен на нефть
+            <a href="https://example.com/news2" target="_blank" class="news-source">Источник</a>
+          </div>
+          <div class="news-item" data-news="Подробности новости 3: Прогноз по Лукойлу">
+            Новость 3: Прогноз по Лукойлу
+            <a href="https://example.com/news3" target="_blank" class="news-source">Источник</a>
+          </div>
+          <div class="news-item" data-news="Подробности новости 4: Дивиденды Газпрома">
+            Новость 4: Дивиденды Газпрома
+            <a href="https://example.com/news4" target="_blank" class="news-source">Источник</a>
+          </div>
+        </div>
+        <div class="opinions-section">
+          <h2>Мнения экспертов</h2>
+          <div class="news-item" data-news="Мнение Когана о Газпроме">
+            Коган: "Газпром недооценён"
+            <a href="https://example.com/opinion1" target="_blank" class="news-source">Источник</a>
+          </div>
+          <div class="news-item" data-news="Мнение Иванова о Сбербанке">
+            Иванов: "Сбербанк перспективен"
+            <a href="https://example.com/opinion2" target="_blank" class="news-source">Источник</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tooltip для мультипликаторов -->
+  <div id="modalTooltip" class="modal-tooltip"></div>
+
+  <!-- Модальное окно -->
+  <div id="stockModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="modalCloseBtn">×</button>
+      <h2 id="modalStockTitle">Информация об акции</h2>
+      <div class="modal-intervals" id="modalIntervals">
+        <button data-interval="1h" class="active">1 час</button>
+        <button data-interval="1d">1 день</button>
+        <button data-interval="7d">1 неделя</button>
+        <button data-interval="1m">1 месяц</button>
+        <button data-interval="6m">Полгода</button>
+      </div>
+      <div style="margin-top: 20px;">
+        <canvas id="modalChart"></canvas>
+      </div>
+      <div class="modal-multipliers">
+        <div class="modal-multiplier" data-tooltip="📌 Цена&#10;Текущая рыночная стоимость акции">
+          <div class="modal-multiplier-title">Цена</div>
+          <div id="modalPriceValue">–</div>
+        </div>
+        <div class="modal-multiplier" data-tooltip="📌 Маркет.кап.&#10;Общая стоимость компании на бирже (Цена × кол-во акций)">
+          <div class="modal-multiplier-title">Маркет.кап.</div>
+          <div id="modalMarketCap">–</div>
+        </div>
+        <div class="modal-multiplier" data-tooltip="📌 P/E&#10;Соотношение цены акции к прибыли на акцию">
+          <div class="modal-multiplier-title">P/E</div>
+          <div id="modalPE">–</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Скрипты -->
+  <script>
+    /* ---------------------- */
+    /* Переключение темы     */
+    /* ---------------------- */
+    const themeToggleInput = document.getElementById('themeToggle');
+    themeToggleInput.addEventListener('change', () => {
+      if (themeToggleInput.checked) {
+        document.body.classList.add('light-theme');
+      } else {
+        document.body.classList.remove('light-theme');
+      }
+    });
+
+    /* ---------------------- */
+    /* Логика авторизации     */
+    /* ---------------------- */
+    const loginSection = document.getElementById('loginSection');
+    const mainContent = document.getElementById('mainContent');
+    const authForm = document.getElementById('authForm');
+
+    authForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Здесь можно добавить любую дополнительную логику проверки логина/пароля.
+      // Если вход успешен — скрываем блок авторизации и показываем основной интерфейс.
+      loginSection.style.display = 'none';
+      mainContent.style.display = 'flex';
+    });
+
+    /* ---------------------- */
+    /* Логика избранных акций */
+    /* ---------------------- */
+    const favoritesToggleBtn = document.getElementById('favoritesToggleBtn');
+    const favoritesListEl = document.getElementById('favoritesList');
+    let favoritesVisible = false;
+    favoritesToggleBtn.addEventListener('click', () => {
+      favoritesVisible = !favoritesVisible;
+      favoritesListEl.style.display = favoritesVisible ? "block" : "none";
+      favoritesToggleBtn.textContent = favoritesVisible ? "–" : "+";
+    });
+    let favorites = [];
+    function generateFavoriteMetrics() {
+      return {
+        price: (100 + Math.random() * 50).toFixed(2) + ' ₽',
+        marketCap: (Math.random() * 1000).toFixed(2) + ' млрд ₽',
+        pe: (5 + Math.random() * 15).toFixed(1)
+      };
+    }
+    function renderFavorites() {
+      favoritesListEl.innerHTML = '';
+      favorites.forEach(stock => {
+        const div = document.createElement('div');
+        div.classList.add('favorite-stock');
+        div.innerHTML = `
+          <div class="stock-item-container" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <div style="display: flex; align-items: center;">
+              <div class="tooltip stock-tooltip" style="margin-right: 8px;">
+                <div class="icon">i</div>
+                <div class="tooltiptext">подробнее об акции</div>
+              </div>
+              <div class="stock-info">${stock.name} (${stock.ticker})</div>
+            </div>
+            ${getFavoriteButtonHTML(true)}
+          </div>
+        `;
+        div.addEventListener('click', () => {
+          setSelectedTicker(stock.ticker);
+        });
+        const tooltipIcon = div.querySelector('.stock-tooltip');
+        tooltipIcon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openStockModal(stock);
+        });
+        const btn = div.querySelector('.favorite-btn');
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          favorites = favorites.filter(f => f.ticker !== stock.ticker);
+          renderFavorites();
+          const query = stockSearchInput.value.toLowerCase().trim();
+          const filtered = query.length === 0 ? bigStocks : 
+            bigStocks.filter(s => s.name.toLowerCase().includes(query) || s.ticker.toLowerCase().includes(query));
+          renderSearchResults(filtered);
+        });
+        favoritesListEl.appendChild(div);
+      });
+    }
+    function getFavoriteButtonHTML(isActive) {
+      if (isActive) {
+        return `<div class="favorite-btn">
+          <svg class="star-icon active" viewBox="0 0 24 24">
+            <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9"></polygon>
+          </svg>
+        </div>`;
+      } else {
+        return `<div class="favorite-btn">
+          <svg class="star-icon inactive" viewBox="0 0 24 24">
+            <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9"></polygon>
+          </svg>
+        </div>`;
+      }
+    }
+
+    /* ---------------------- */
+    /* Логика поиска акций    */
+    /* ---------------------- */
+    const searchResultsEl = document.getElementById('searchResults');
+    const stockSearchInput = document.getElementById('stockSearch');
+    // Пример массива акций
+    const bigStocks = [
+      { name: "АЛРОСА", ticker: "ALRS" },
+      { name: "Аэрофлот", ticker: "AFLT" },
+      { name: "Башнефть", ticker: "BANE" },
+      { name: "Банк Санкт-Петербург", ticker: "BSPB" },
+      { name: "ВТБ", ticker: "VTBR" },
+      { name: "Газпром", ticker: "GAZP" },
+      { name: "Газпром нефть", ticker: "SIBN" },
+      { name: "Интер РАО", ticker: "IRAO" },
+      { name: "Камаз", ticker: "KMAZ" },
+      { name: "Ленэнерго", ticker: "LSNG" },
+      { name: "Лукойл", ticker: "LKOH" },
+      { name: "Магнит", ticker: "MGNT" },
+      { name: "Мечел", ticker: "MTLR" },
+      { name: "Мосэнерго", ticker: "MSNG" },
+      { name: "Московская биржа", ticker: "MOEX" },
+      { name: "МТС", ticker: "MTSS" },
+      { name: "НЛМК", ticker: "NLMK" },
+      { name: "Норникель", ticker: "GMKN" },
+      { name: "Новатэк", ticker: "NVTK" },
+      { name: "Обувь России", ticker: "OBUV" },
+      { name: "ПИК", ticker: "PIKK" },
+      { name: "Полюс", ticker: "PLZL" },
+      { name: "Россети", ticker: "RSTI" },
+      { name: "Роснефть", ticker: "ROSN" },
+      { name: "Ростелеком", ticker: "RTKM" },
+      { name: "РусГидро", ticker: "HYDR" },
+      { name: "Русал", ticker: "RUAL" },
+      { name: "Сбербанк", ticker: "SBER" },
+      { name: "Северсталь", ticker: "CHMF" },
+      { name: "Соллерс", ticker: "SVAV" },
+      { name: "Сургутнефтегаз", ticker: "SNGS" },
+      { name: "Татнефть", ticker: "TATN" },
+      { name: "ТМК", ticker: "TRMK" },
+      { name: "Транснефть", ticker: "TRNFP" },
+      { name: "Уралкалий", ticker: "URKA" },
+      { name: "ФосАгро", ticker: "PHOR" },
+      { name: "ФСК ЕЭС", ticker: "FEES" },
+      { name: "Х5 Retail Group", ticker: "FIVE" },
+      { name: "Энел Россия", ticker: "ENRU" },
+      { name: "Юнипро", ticker: "UPRO" },
+      { name: "Яндекс", ticker: "YNDX" },
+      { name: "Детский мир", ticker: "DSKY" },
+      { name: "Аптечная сеть 36,6", ticker: "APTK" },
+      { name: "СПБ Биржа", ticker: "SPBE" }
+    ].sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }));
+
+    function renderSearchResults(list) {
+      searchResultsEl.innerHTML = '';
+      list.forEach(stock => {
+        const div = document.createElement('div');
+        div.classList.add('search-item');
+        const isFav = favorites.some(f => f.ticker === stock.ticker);
+        div.innerHTML = `
+          <div class="stock-item-container" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <div style="display: flex; align-items: center;">
+              <div class="tooltip stock-tooltip" style="margin-right: 8px;">
+                <div class="icon">i</div>
+                <div class="tooltiptext">подробнее</div>
+              </div>
+              <span class="stock-info">${stock.name} (${stock.ticker})</span>
+            </div>
+            ${getFavoriteButtonHTML(isFav)}
+          </div>
+        `;
+        div.addEventListener('click', (e) => {
+          if (e.target.closest('.favorite-btn') || e.target.closest('.tooltip')) return;
+          setSelectedTicker(stock.ticker);
+        });
+        const tooltipIcon = div.querySelector('.stock-tooltip');
+        tooltipIcon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openStockModal(stock);
+        });
+        const btn = div.querySelector('.favorite-btn');
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (favorites.some(f => f.ticker === stock.ticker)) {
+            favorites = favorites.filter(f => f.ticker !== stock.ticker);
+          } else {
+            favorites.push({ ...stock, metrics: generateFavoriteMetrics() });
+          }
+          renderFavorites();
+          renderSearchResults(list);
+        });
+        searchResultsEl.appendChild(div);
+      });
+      searchResultsEl.style.display = list.length > 0 ? 'block' : 'none';
+    }
+
+    stockSearchInput.addEventListener('focus', () => {
+      if (!stockSearchInput.value.trim()) {
+        renderSearchResults(bigStocks);
+      }
+    });
+    stockSearchInput.addEventListener('input', () => {
+      const query = stockSearchInput.value.toLowerCase().trim();
+      if (query.length === 0) {
+        renderSearchResults(bigStocks);
+        return;
+      }
+      const filtered = bigStocks.filter(s => s.name.toLowerCase().includes(query) || s.ticker.toLowerCase().includes(query));
+      renderSearchResults(filtered);
+    });
+    document.addEventListener('click', (e) => {
+      const searchBlock = document.getElementById('searchBlock');
+      if (!searchBlock.contains(e.target)) {
+        searchResultsEl.style.display = 'none';
+      }
+    });
+
+    /* ---------------------- */
+    /* Храним выбранный тикер */
+    /* ---------------------- */
+    let selectedTickerSymbol = null;
+
+    /* ---------------------- */
+    /* Выбор тикера           */
+    /* ---------------------- */
+    function setSelectedTicker(ticker) {
+      selectedTickerSymbol = ticker; // сохраняем глобально
+      const container = document.getElementById('selectedTickerContainer');
+      container.innerHTML = `<span class="selected-ticker">${ticker}</span>
+        <span class="ticker-close">✖</span>`;
+      const closeBtn = container.querySelector('.ticker-close');
+      closeBtn.addEventListener('click', () => {
+        container.innerHTML = '';
+        selectedTickerSymbol = null; // сбрасываем, если удалили
+      });
+    }
+
+    /* ---------------------- */
+    /* Переключение типа графика */
+    /* ---------------------- */
+    const lineBtn = document.getElementById('lineBtn');
+    const candleBtn = document.getElementById('candleBtn');
+    let currentChartType = 'line';
+
+    function setChartType(type) {
+      lineBtn.classList.remove('active');
+      candleBtn.classList.remove('active');
+      if (type === 'line') {
+        lineBtn.classList.add('active');
+      } else {
+        candleBtn.classList.add('active');
+      }
+      currentChartType = type;
+      // Обновим график, сохранив текущий интервал, но без смены тикера
+      updateChartInterval(currentIntervalDays, selectedTickerSymbol);
+    }
+    lineBtn.addEventListener('click', () => setChartType('line'));
+    candleBtn.addEventListener('click', () => setChartType('candle'));
+
+    /* ---------------------- */
+    /* Генерация данных для графика */
+    /* ---------------------- */
+    function generateChartData(days) {
+      let data = [];
+      let labels = [];
+      let currentDate = new Date();
+      currentDate.setDate(currentDate.getDate() - 1);
+      let historicalEndDate = new Date(currentDate);
+      let startDate = new Date(currentDate);
+      startDate.setDate(startDate.getDate() - days + 1);
+      let price = 100 + Math.random() * 20;
+
+      for (let d = new Date(startDate); d <= historicalEndDate; d.setDate(d.getDate() + 1)) {
+        let dd = ("0" + d.getDate()).slice(-2);
+        let mm = ("0" + (d.getMonth() + 1)).slice(-2);
+        labels.push(dd + '.' + mm);
+        price += (Math.random() * 4 - 2);
+        data.push(parseFloat(price.toFixed(2)));
+      }
+
+      // Добавим точку с «прогнозом»
+      let forecastDate = new Date(historicalEndDate);
+      forecastDate.setDate(forecastDate.getDate() + 1);
+      let dd = ("0" + forecastDate.getDate()).slice(-2);
+      let mm = ("0" + (forecastDate.getMonth() + 1)).slice(-2);
+      labels.push(dd + '.' + mm);
+      let forecastPrice = data[data.length - 1] + (Math.random() * 4 - 2);
+
+      return {
+        labels,
+        historicalData: data,
+        forecastPrice: parseFloat(forecastPrice.toFixed(2))
+      };
+    }
+
+    function getForecastDatasetData(historicalData, forecastPrice) {
+      let forecastData = new Array(historicalData.length + 1).fill(null);
+      forecastData[historicalData.length - 1] = historicalData[historicalData.length - 1];
+      forecastData[historicalData.length] = forecastPrice;
+      return forecastData;
+    }
+
+    /* ---------------------- */
+    /* Инициализация основного графика */
+    /* ---------------------- */
+    const ctx = document.getElementById('stockChart').getContext('2d');
+    let stockChart;
+    let currentIntervalDays = 7;
+
+    function updateChartInterval(days, ticker = 'SBER') {
+      // Если нет выбранного тикера, по умолчанию пусть будет "SBER"
+      const chartLabel = ticker || 'SBER';
+      const chartData = generateChartData(days);
+      if (stockChart) {
+        stockChart.destroy();
+      }
+      stockChart = new Chart(ctx, {
+        type: currentChartType === 'line' ? 'line' : 'bar',
+        data: {
+          labels: chartData.labels,
+          datasets: [
+            {
+              label: chartLabel,
+              data: [...chartData.historicalData, null],
+              borderColor: '#6c63ff',
+              backgroundColor: currentChartType === 'line' ? 'rgba(108,99,255,0.2)' : '#6c63ff',
+              tension: 0,
+              pointRadius: currentChartType === 'line' ? 3 : 0
+            },
+            {
+              label: 'Прогноз',
+              data: getForecastDatasetData(chartData.historicalData, chartData.forecastPrice),
+              borderColor: '#28a745',
+              backgroundColor: currentChartType === 'line' ? 'rgba(40,167,69,0.2)' : '#28a745',
+              borderDash: currentChartType === 'line' ? [5,5] : [],
+              tension: 0,
+              pointRadius: currentChartType === 'line' ? 3 : 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            x: { title: { display: true, text: 'Дата' } },
+            y: { title: { display: true, text: 'Цена (₽)' } }
+          }
+        }
+      });
+    }
+    updateChartInterval(currentIntervalDays); // Стартовый график
+
+    const intervalButtons = document.querySelectorAll('#intervalSelector button');
+    intervalButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        intervalButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        currentIntervalDays = parseInt(button.getAttribute('data-days'));
+        updateChartInterval(currentIntervalDays, selectedTickerSymbol);
+      });
+    });
+
+    /* ---------------------- */
+    /* Модальное окно акций   */
+    /* ---------------------- */
+    const modalTooltip = document.getElementById('modalTooltip');
+    document.querySelectorAll('.modal-multiplier').forEach(el => {
+      el.addEventListener('mouseenter', (e) => {
+        modalTooltip.textContent = el.getAttribute('data-tooltip');
+        modalTooltip.style.display = 'block';
+        const rect = el.getBoundingClientRect();
+        modalTooltip.style.top = rect.top + "px";
+        modalTooltip.style.left = rect.right + 10 + "px";
+      });
+      el.addEventListener('mouseleave', () => {
+        modalTooltip.style.display = 'none';
+      });
+    });
+
+    const stockModal = document.getElementById('stockModal');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+    const modalStockTitle = document.getElementById('modalStockTitle');
+    const modalChartCtx = document.getElementById('modalChart').getContext('2d');
+    let modalChart;
+    let modalInterval = '1h';
+    const modalIntervalButtons = document.querySelectorAll('#modalIntervals button');
+    const modalPriceValue = document.getElementById('modalPriceValue');
+    const modalMarketCap = document.getElementById('modalMarketCap');
+    const modalPE = document.getElementById('modalPE');
+
+    function openStockModal(stock) {
+      modalStockTitle.textContent = `Информация об акции: ${stock.name} (${stock.ticker})`;
+      modalPriceValue.textContent = (100 + Math.random() * 50).toFixed(2) + ' ₽';
+      modalMarketCap.textContent = (Math.random() * 1000).toFixed(2) + ' млрд ₽';
+      modalPE.textContent = (Math.random() * 20).toFixed(2);
+      updateModalChart(modalInterval);
+      stockModal.classList.add('show');
+      scaleModalContent();
+    }
+    function closeStockModal() {
+      stockModal.classList.remove('show');
+    }
+    modalCloseBtn.addEventListener('click', closeStockModal);
+    stockModal.addEventListener('click', (e) => {
+      if (e.target === stockModal) {
+        closeStockModal();
+      }
+    });
+    modalIntervalButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modalIntervalButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        modalInterval = btn.getAttribute('data-interval');
+        updateModalChart(modalInterval);
+      });
+    });
+    function generateModalData(interval) {
+      let pointsCount = 10;
+      if (interval === '1h') pointsCount = 6;
+      if (interval === '1d') pointsCount = 24;
+      if (interval === '7d') pointsCount = 7;
+      if (interval === '1m') pointsCount = 30;
+      if (interval === '6m') pointsCount = 6;
+      let labels = [];
+      let data = [];
+      let price = 100 + Math.random() * 20;
+      for (let i = 0; i < pointsCount; i++) {
+        labels.push(`${i + 1}`);
+        price += (Math.random() * 4 - 2);
+        data.push(parseFloat(price.toFixed(2)));
+      }
+      return { labels, data };
+    }
+    function updateModalChart(interval) {
+      const { labels, data } = generateModalData(interval);
+      if (modalChart) modalChart.destroy();
+      modalChart = new Chart(modalChartCtx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Цена',
+            data,
+            borderColor: '#ff5722',
+            backgroundColor: 'rgba(255,87,34,0.2)',
+            tension: 0,
+            pointRadius: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { title: { display: true, text: 'Точки (условные)' } },
+            y: { title: { display: true, text: 'Цена (₽)' } }
+          }
+        }
+      });
+    }
+
+    /* Хэлпер для модального окна */
+    function scaleModalContent() {
+      const modalContent = document.querySelector('.modal-content');
+      if (!modalContent) return;
+      const availableWidth = window.innerWidth * 0.9;
+      const availableHeight = window.innerHeight * 0.9;
+      const contentWidth = modalContent.scrollWidth;
+      const contentHeight = modalContent.scrollHeight;
+      const scale = Math.min(availableWidth / contentWidth, availableHeight / contentHeight, 1);
+      modalContent.style.transform = `scale(${scale})`;
+    }
+    window.addEventListener('resize', scaleModalContent);
+
+    /* ---------------------- */
+    /* Инициализация Flatpickr */
+    /* ---------------------- */
+    const dateInput = document.getElementById('forecast-date');
+    const datePickerWrapper = document.querySelector('.date-picker-wrapper');
+    const today = new Date();
+    const maxDate = new Date(today.getFullYear(), today.getMonth() + 6, today.getDate());
+    const fpInstance = flatpickr(dateInput, {
+      locale: "ru",
+      dateFormat: "d.m.y",
+      maxDate: maxDate,
+      clickOpens: true,
+      appendTo: document.querySelector(".date-picker-wrapper"),
+      position: "below",
+      onReady: function(selectedDates, dateStr, instance) {
+        if (maxDate.getFullYear() === today.getFullYear()) {
+          instance.calendarContainer
+            .querySelector(".flatpickr-current-month")
+            .classList.add("no-year");
+        } else {
+          instance.calendarContainer
+            .querySelector(".flatpickr-current-month")
+            .classList.remove("no-year");
+        }
+
+        const datePickerButton = document.querySelector(".date-picker-button");
+        datePickerButton.addEventListener("click", () => {
+          if(fpInstance.isOpen) {
+            fpInstance.close();
+          } else {
+            fpInstance.open();
+          }
+        });
+      }
+    });
+
+    /* ---------------------- */
+    /* Кнопка "Рассчитать"    */
+    /* ---------------------- */
+    const forecastCalcButton = document.querySelector('.forecast-calc-button');
+    forecastCalcButton.addEventListener('click', () => {
+      const forecastDateValue = dateInput.value;
+      if (!selectedTickerSymbol) {
+        alert("Пожалуйста, выберите тикер для расчёта прогноза.");
+        return;
+      }
+      if (!forecastDateValue) {
+        alert("Пожалуйста, выберите дату прогноза.");
+        return;
+      }
+      // После выбора тикера и даты, обновляем центральный график
+      updateChartInterval(currentIntervalDays, selectedTickerSymbol);
+    });
+  </script>
+</body>
+</html>

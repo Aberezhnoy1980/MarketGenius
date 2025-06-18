@@ -1,0 +1,128 @@
+# Simple async s3 client for immers.cloud
+
+Source code https://github.com/Aberezhnoy1980/MarketGenius/tree/main/ds_app/src/clients/s3_client
+## install
+
+```SHELL
+pip install simplest_async_s3client
+```
+
+## Getting started
+
+Get the access key, secret key and url (https://api.immers.cloud:8080) from immers.cloud and create an instance of the client:
+
+```python
+from simplest_async_s3client.s3client import S3Client
+
+
+your_access_key = 'access_key'
+your_secret_key = 'secret_key'
+your_endpoint_url = 'endpoint_url'
+
+s3_client = S3Client(
+    access_key=your_access_key,
+    secret_key=your_secret_key,
+    endpoint_url=your_endpoint_url,
+)
+```
+
+This client contains several methods for working with objects (files):
+
+* If necessary, you can create a new bucket in the storage:
+
+```python
+# For execute the coroutine you can use asyncio.
+import asyncio
+
+new_bucket_name = 'new_bucket_name'
+asyncio.run(
+    await s3_client.create_bucket(new_bucket_name)
+)
+```
+
+* Uploading files. You can send one or more objects to the storage:
+
+```python
+# For a single file
+async def upload_file(file_path, bucket_name):
+    await s3_client.upload_file(file_path, bucket_name)
+
+file_path = '/path/to/your/file'
+bucket_name = 'your bucket name'
+
+asyncio.run(upload_file(file_path, bucket_name))
+
+# For a group of files or a directory. For example, you have a directory with files
+import os
+
+
+async def upload_files(dir_path, bucket):
+    files_list = os.listdir(dir_path)
+    file_paths = [os.path.join(dir_path, file) for file in files_list]
+
+    for file_path in file_paths:
+        await s3_client.upload_file(file_path, bucket)
+
+
+dir_path = '/path/to/your/directory'
+bucket_name = "bucket_name"
+
+asyncio.run(upload_files(dir_path, bucket_name))
+```
+
+* Getting a list of objects in storage:
+
+```python
+async def get_file_list(bucket):
+    obj_list = await s3_client.get_object_list(bucket)
+
+    for item in obj_list:
+        print(item["Key"], item["Size"])
+
+bucket_name = 'bucket name'
+
+asyncio.run(get_file_list(bucket_name))
+```
+* Getting object. The file will be created in the destination directory (use '.' for current):
+```python
+async def get_file(bucket, file_name, destination):
+    response = await s3_client.get_object(bucket, file_name, destination)
+    print(response)
+
+    
+bucket_name = 'bucket name' 
+file_name = 'file name' # can get from get_file_list()
+destination = 'path/to/destination/directory'
+
+asyncio.run(get_file(bucket_name, file_name, destination))
+```
+
+* Deleting files:
+```python
+async def delete_file(bucket, objects_to_delete):
+    resp = await s3_client.delete_objects(bucket, objects_to_delete)
+    print(resp['ResponseMetadata']['HTTPStatusCode'])
+
+
+objects_to_delete = [{"Key": "file_name"}]
+bucket_name = "bucket name"
+
+asyncio.run(delete_file(bucket_name, objects_to_delete))
+
+
+# delete more than one file
+async def delete_all(bucket):
+    objects = await s3_client.get_object_list(bucket)
+    objects_to_delete = []
+
+    for obj in objects:
+        objects_to_delete.append({'Key': obj['Key']})
+
+    resp = await s3_client.delete_objects(bucket, objects_to_delete)
+    print(resp['ResponseMetadata']['HTTPStatusCode'])
+
+
+bucket_name = 'bucket name'
+
+asyncio.run(delete_all(bucket_name))
+```

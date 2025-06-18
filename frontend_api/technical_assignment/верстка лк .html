@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Личный кабинет</title>
+  <!-- Подключаем шрифт Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;800&display=swap" rel="stylesheet">
+  <style>
+    /* Переменные тем */
+    :root {
+      --bg-color-dark: #1e1e2f;
+      --main-bg-dark: #29293d;
+      --text-color-dark: #cfd8dc;
+      --shadow-color-dark: rgba(0,0,0,0.6);
+
+      --bg-color-light: #f4f6fa;
+      --main-bg-light: #ffffff;
+      --text-color-light: #2c2c2c;
+      --shadow-color-light: rgba(0,0,0,0.2);
+
+      --accent-color: #1976D2;
+      --accent-color-hover: #1565C0;
+    }
+    body:not(.light-theme) { background: var(--bg-color-dark); color: var(--text-color-dark); }
+    body.light-theme { background: var(--bg-color-light); color: var(--text-color-light); }
+    body { font-family: 'Inter', sans-serif; margin:0; padding:0; display:flex; justify-content:center; align-items:center; height:100vh; transition:background-color 0.3s, color 0.3s; }
+
+    .card { background: var(--main-bg-light); padding:30px; border-radius:10px; box-shadow:0 4px 12px var(--shadow-color-light); width:100%; max-width:400px; transition:background 0.3s; }
+    body:not(.light-theme) .card { background: var(--main-bg-dark); box-shadow:0 4px 12px var(--shadow-color-dark); }
+
+    .profile-info { margin-bottom:20px; }
+    .profile-info h2 { margin:0 0 10px; font-size:1.5rem; }
+
+    .btn { padding:10px 20px; border:none; background:var(--accent-color); color:#fff; font-weight:800; border-radius:5px; cursor:pointer; transition:background 0.3s; }
+    .btn:hover { background:var(--accent-color-hover); }
+
+    #subscribeBlock { display:none; margin-top:20px; }
+    .cost { font-size:1.25rem; font-weight:800; margin:0 0 10px; }
+    .info-text { font-size:0.9rem; color:#666; }
+    body:not(.light-theme) .info-text { color:#aaa; }
+
+    /* Стили чекбокса Uiverse, уменьшены до размера текста */
+    .checkbox-container { display:inline-block; position:relative; padding-left:28px; margin-bottom:12px; cursor:pointer; font-size:16px; line-height:18px; user-select:none; }
+    .custom-checkbox { position:absolute; opacity:0; cursor:pointer; height:0; width:0; }
+    .checkmark { position:absolute; top:0; left:0; height:18px; width:18px; background-color:#eee; border-radius:4px; transition:background-color 0.3s; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
+    .checkmark:after { content:""; position:absolute; display:none; left:6px; top:4px; width:4px; height:8px; border:solid white; border-width:0 3px 3px 0; transform:rotate(45deg); }
+    .custom-checkbox:checked ~ .checkmark { background-color:#2196F3; box-shadow:0 3px 7px rgba(33,150,243,0.3); }
+    .custom-checkbox:checked ~ .checkmark:after { display:block; animation:checkAnim 0.2s forwards; }
+    @keyframes checkAnim { 0%{height:0;} 100%{height:8px;} }
+
+    /* Модальное окно оферты */
+    .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; overflow:auto; background:rgba(0,0,0,0.5); }
+    .modal-content { background:#fff; margin:5% auto; border-radius:10px; max-width:600px; max-height:80%; overflow:auto; padding:20px; position:relative; }
+    .modal-content h2 { margin-top:0; }
+    .close { position:absolute; top:10px; right:20px; font-size:24px; font-weight:bold; cursor:pointer; }
+    .offer-link { font-weight:400; color:var(--accent-color); cursor:pointer; text-decoration:underline; }
+    .offer-link.active { font-weight:800; }
+  </style>
+</head>
+<body class="light-theme">
+  <div class="card">
+    <div class="profile-info">
+      <h2>Привет, <span id="userLogin">User123</span>!</h2>
+      <p>Логин: <strong id="userLogin2">User123</strong></p>
+    </div>
+    <button id="btnSubscribe" class="btn">Оформить PLUS</button>
+    <div id="subscribeBlock">
+      <p class="cost">Стоимость подписки: 1 990 ₽ / мес.</p>
+      <label class="checkbox-container">Я принимаю условия <span id="offerLink" class="offer-link">оферты</span>
+        <input type="checkbox" id="acceptOffer" class="custom-checkbox">
+        <span class="checkmark"></span>
+      </label>
+      <img src="../src/assets/qr sber MG.PNG" alt="QR для оплаты" id="qrImage" style="display:none; width:200px; margin-top:10px;">
+      <p class="info-text"><strong>Для активации укажите в комментарии к переводу свой логин.</strong></p>
+    </div>
+  </div>
+
+  <!-- Модальное окно оферты -->
+  <div id="offerModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeModal">&times;</span>
+      <h2>Публичная оферта</h2>
+      <div class="modal-body">
+        <!-- Скопируйте сюда текст оферты из документа -->
+        <p>г. Москва<br>Дата публикации: автоматически при размещении</p>
+        <p>Физическое лицо, применяющее специальный налоговый режим «Налог на профессиональный доход», Иванов Иван Геральдович, ИНН 581693602268, далее именуемый «Исполнитель», публикует настоящую публичную оферту...</p>
+        <!-- ...полный текст оферты... -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Подписка и QR
+    document.getElementById('btnSubscribe').addEventListener('click', () => {
+      document.getElementById('subscribeBlock').style.display = 'block';
+    });
+    document.getElementById('acceptOffer').addEventListener('change', function() {
+      document.getElementById('qrImage').style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Модальное окно оферты
+    const offerLink = document.getElementById('offerLink');
+    const modal = document.getElementById('offerModal');
+    const closeBtn = document.getElementById('closeModal');
+    offerLink.addEventListener('click', () => {
+      offerLink.classList.add('active');
+      modal.style.display = 'block';
+    });
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', e => {
+      if (e.target === modal) modal.style.display = 'none';
+    });
+
+    // Вставка логина
+    const login = await axios.get("http://localhost:8000/auth/me", ); // TODO: заменить динамически
+    document.getElementById('userLogin').textContent = login;
+    document.getElementById('userLogin2').textContent = login;
+  </script>
+</body>
+</html>

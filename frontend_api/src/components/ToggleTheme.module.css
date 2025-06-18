@@ -1,0 +1,63 @@
+.themeToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.themeToggle:hover {
+  background-color: var(--hover-bg);
+}
+
+.themeToggleInner {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.themeToggleInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.sunMoonIcon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.sunMoon {
+  fill: currentColor;
+  transition: transform 0.3s ease;
+}
+
+.sunRays {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.sunRay {
+  fill: currentColor;
+}
+
+/* Темная тема - луна видна */
+[data-theme="dark"] .sunMoon {
+  transform: rotate(-25deg);
+}
+
+[data-theme="dark"] .sunRays {
+  opacity: 0;
+}
+
+/* Светлая тема - солнце видно */
+[data-theme="light"] .sunMoon {
+  transform: rotate(0);
+}
+
+[data-theme="light"] .sunRays {
+  opacity: 1;
+}
