@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import AuthForm from "../components/auth/AuthForm";
+import AuthForm from "../components/Auth/AuthForm";
 import ToggleThemeButton from "../components/ToggleThemeButton";
 import styles from "./AuthPage.module.css";
 
