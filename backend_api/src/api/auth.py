@@ -5,7 +5,7 @@ from fastapi import APIRouter, Body, HTTPException, Response
 from fastapi import BackgroundTasks
 from fastapi import Request
 
-from schemas.response_model import AuthCheckResponse
+from src.schemas.response_model import AuthCheckResponse
 from src.services.email_service import EmailService
 from src.users_db import async_session_maker
 from src.repositories.users import UsersRepository

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from api.dependencies import UserDep
+from src.api.dependencies import UserDep
 from src.services.init_dashboard_service import InitDashboardService
 from src.schemas.dashboard import DashboardInitResponse
 

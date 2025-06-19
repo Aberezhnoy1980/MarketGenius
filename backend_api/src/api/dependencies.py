@@ -5,9 +5,9 @@ import jwt
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from repositories.users import UsersRepository
+from src.repositories.users import UsersRepository
 from src.services.auth_service import AuthService
-from users_db import async_session_maker
+from src.users_db import async_session_maker
 
 security = HTTPBearer()
 

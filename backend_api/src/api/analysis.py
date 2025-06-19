@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
-from api.dependencies import AccessDep
-from features_db import feature_async_session_maker
-from services.auth_service import AuthService
+from src.api.dependencies import AccessDep
+from src.features_db import feature_async_session_maker
+from src.services.auth_service import AuthService
 from src.schemas.analysis import AnalysisResponse
 from src.services.analysis import AnalysisService
 from src.repositories.analysis import AnalysisRepository

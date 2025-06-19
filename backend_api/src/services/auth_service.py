@@ -5,9 +5,9 @@ from fastapi import HTTPException
 from passlib.context import CryptContext
 import jwt
 
-from repositories.users import UsersRepository
+from src.repositories.users import UsersRepository
 from src.config import settings
-from users_db import async_session_maker
+from src.users_db import async_session_maker
 
 
 class AuthService:

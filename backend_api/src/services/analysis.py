@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 import logging
 
-from repositories.analysis import AnalysisRepository
+from src.repositories.analysis import AnalysisRepository
 
 logger = logging.getLogger(__name__)
 
