@@ -1,5 +1,8 @@
+version: '3.8'
+
 networks:
   dev:
+    driver: bridge
 
 services:
   nginx:
@@ -19,11 +22,17 @@ services:
   backend:
     build:
       context: ./backend_api
+    environment:
+      - ENV=production
     networks:
       - dev
+    expose:
+      - "8000"  # Важно для связи между контейнерами
 
   frontend:
     build:
       context: ./frontend
     networks:
       - dev
+    expose:
+      - "3000"  # React по умолчанию на 3000 порту
